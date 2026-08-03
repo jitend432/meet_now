@@ -8,3 +8,19 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # Add any project specific keep options here:
+
+# ==========================================
+# Razorpay ProGuard Rules
+# ==========================================
+-keep class com.razorpay.** {*;}
+-dontwarn com.razorpay.**
+
+# ==========================================
+# Retrofit / OkHttp / Axios Native Bridges Rules
+# ==========================================
+-keepattributes Signature, InnerClasses, EnclosingMethod
+
+# Agar aap serializable models use kar rahe hain response parse karne ke liye
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}

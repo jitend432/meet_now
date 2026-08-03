@@ -1,4 +1,4 @@
-package com.datingapp
+package com.vynkdatingapp
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
