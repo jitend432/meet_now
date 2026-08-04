@@ -144,7 +144,7 @@ const YourInterestScreen = ({ navigation }) => {
           <View style={styles.progressContainer}>
             <View style={styles.progressTextRow}>
               <Text style={styles.progressStep}>Step 5 of 5</Text>
-              <Text style={styles.progressPercentage}>75%</Text>
+              <Text style={styles.progressPercentage}>65%</Text>
             </View>
             <View style={styles.progressBarBg}>
               <View style={styles.progressBarFill} />
@@ -211,7 +211,7 @@ export default YourInterestScreen;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.white, 
+    backgroundColor: COLORS.background, 
   },
   scrollContainer: {
     paddingHorizontal: 16,
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   cardContainer: {
-    backgroundColor: '#fbf5db', // Off-yellow card tint from image
+    backgroundColor:  COLORS.background,
     borderRadius: 24,
     padding: 24,
     width: '100%',

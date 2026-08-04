@@ -12,8 +12,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../../constants/theme';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
-import LogoImage from '../../assets/images/hexadating.png';
+import LogoImage from '../../assets/images/vynk_t.png';
 import Dropdown from '../../components/common/Dropdown';
+import DatePickerInput from '../../components/common/DatePickerInput';
+import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-free-solid/static";
 
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { updateProfileDraft } from '../../redux/slices/authSlice';
@@ -27,7 +29,7 @@ const BasicInformationScreen = ({ navigation }) => {
 
   const dispatch = useAppDispatch()
 
-  const [age, setAge] = useState('25'); 
+  const [age, setAge] = useState(''); 
   const [fullName, setFullName] = useState('');
   const [gender, setGender] = useState('');
   const [aboutMe, setAboutMe] = useState('');
@@ -77,12 +79,12 @@ const BasicInformationScreen = ({ navigation }) => {
 
 const handleContinue = () => {
   if (!age || !gender || !aboutMe || !fullName ) {
-    Alert.alert('Validation Error', 'Please fill all mandatory fields (Age, Gender).');
+    Alert.alert('Validation Error', 'Please fill all mandatory fields.');
     return;
   }
 
   const basicInfoPayload = {
-    dateOfBirth: parseInt(age, 10),
+    dateOfBirth: age,
     gender: gender, 
     bio: aboutMe,     
     fullName: fullName
@@ -119,10 +121,10 @@ const handleContinue = () => {
           <View style={styles.progressWrapper}>
             <View style={styles.progressTextRow}>
               <Text style={styles.progressStepLabel}>Step 3 of 5</Text>
-              <Text style={styles.progressPercentageMetric}>50%</Text>
+              <Text style={styles.progressPercentageMetric}>35%</Text>
             </View>
             <View style={styles.progressTrackBackground}>
-              <View style={[styles.progressTrackFill, { width: '50%' }]} />
+              <View style={[styles.progressTrackFill, { width: '35%' }]} />
             </View>
           </View>
 
@@ -141,14 +143,23 @@ const handleContinue = () => {
               style={styles.formFieldShadow}
             />
 
-            <Input
+            {/* <Input
               label="Age"
               placeholder="Enter your age"
               value={age}
               onChangeText={setAge}
               keyboardType="number-pad"
               style={styles.formFieldShadow}
-            />
+            /> */}
+
+            <DatePickerInput
+             label="Date of Birth"
+             placeholder="Select date of birth"
+             value={age}
+             onSelectDate={setAge}
+             icon={<FontAwesomeFreeSolid name="calendar-alt" size={18} color={COLORS.logoBg} />}
+             style={styles.formFieldShadow}
+           />
 
             {/* Gender Selector - Dropdown UI Action Wrap */}
             {/* <TouchableOpacity 
@@ -218,7 +229,7 @@ export default BasicInformationScreen;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#ffffff', 
+    backgroundColor: COLORS.background, 
   },
   scrollContainer: {
     flexGrow: 1,

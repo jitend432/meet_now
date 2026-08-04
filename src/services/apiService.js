@@ -2,7 +2,6 @@ import axios from 'axios';
 import { store } from '../redux/store'; 
 import { logout } from '../redux/slices/authSlice';
 
-//const BASE_URL = 'https://hexawarredating.com/api'; 
 const BASE_URL = 'https://vynkdating.com/api'; 
 
 const apiService = axios.create({

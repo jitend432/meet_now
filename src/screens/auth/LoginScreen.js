@@ -7,7 +7,8 @@ import {
  Image, 
  TouchableOpacity,
  Alert,
- StatusBar
+ StatusBar,
+ Modal
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONTSIZE } from '../../constants/theme';
@@ -29,11 +30,54 @@ const LoginScreen = ({ navigation }) => {
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState({ title: '', message: '', isSuccess: false });
+
+  const showFeedbackModal = (title, message, isSuccess = false) => {
+    setModalConfig({ title, message, isSuccess });
+    setModalVisible(true);
+  };
+
   const dispatch = useAppDispatch();
 
-  const handleLogin = async () => {
+//   const handleLogin = async () => {
+//   if (!email.trim() || !password.trim()) {
+//     Alert.alert('Validation Error', 'Please enter both email and password.');
+//     return;
+//   }
+//   setLoading(true);
+
+//   try {
+//     const resData = await authApi.login(email.trim(), password);
+    
+//     console.log('Login Screen Resolved Data:', resData);
+   
+//     if (resData && resData.data && resData.data.token) {
+      
+//       dispatch(setCredentials({
+//         token: resData.data.token,
+//         refreshToken: null,
+//       }));       
+      
+//     } else {
+//       const backendMessage = resData?.msg || 'Invalid response format from server.';
+//       Alert.alert('Login Error', backendMessage);
+//     }
+
+//   } catch (error) {
+//     console.error('Actual Login Catch Error:', error);
+    
+//     const errorMessage = error.response?.data?.msg || error.message || 'Something went wrong. Please try again.';
+//     Alert.alert('Login Failed', errorMessage);
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+const handleLogin = async () => {
   if (!email.trim() || !password.trim()) {
-    Alert.alert('Validation Error', 'Please enter both email and password.');
+    showFeedbackModal('Validation Error', 'Please enter both email and password.', false);
     return;
   }
   setLoading(true);
@@ -41,25 +85,31 @@ const LoginScreen = ({ navigation }) => {
   try {
     const resData = await authApi.login(email.trim(), password);
     
-    console.log('Login Screen Resolved Data:', resData);
-   
     if (resData && resData.data && resData.data.token) {
-      
-      dispatch(setCredentials({
-        token: resData.data.token,
-        refreshToken: null,
-      }));       
-      
+      showFeedbackModal('Success', 'Login successful!', true);
+
+      setTimeout(() => {
+        setModalVisible(false);
+        dispatch(setCredentials({
+          token: resData.data.token,
+          refreshToken: null,
+        }));      
+      }, 1000);
+
     } else {
       const backendMessage = resData?.msg || 'Invalid response format from server.';
-      Alert.alert('Login Error', backendMessage);
+      showFeedbackModal('Login Failed', backendMessage, false);
     }
 
   } catch (error) {
+    //const errorMsg = error.response?.data?.msg || error.message || 'Invalid email or password.';
+    //showFeedbackModal('Login Failed', errorMsg, false);
+
     console.error('Actual Login Catch Error:', error);
-    
-    const errorMessage = error.response?.data?.msg || error.message || 'Something went wrong. Please try again.';
-    Alert.alert('Login Failed', errorMessage);
+  
+  const userFriendlyMessage = 'Invalid email or password. Please try again.';
+
+  showFeedbackModal('Login Failed', userFriendlyMessage, false);
   } finally {
     setLoading(false);
   }
@@ -68,6 +118,35 @@ const LoginScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar backgroundColor={COLORS.background} barStyle="dark-content" />
+      <Modal
+           animationType="fade"
+           transparent={true}
+           visible={modalVisible}
+           onRequestClose={() => setModalVisible(false)}
+         >
+           <View style={styles.modalOverlay}>
+             <View style={styles.modalContent}>
+               <View style={[styles.modalIconBg, modalConfig.isSuccess ? styles.successBg : styles.errorBg]}>
+                 <FontAwesomeFreeSolid 
+                   name={modalConfig.isSuccess ? "check" : "exclamation"} 
+                   size={22} 
+                   color={COLORS.white} 
+                 />
+               </View>
+               <Text style={styles.modalTitle}>{modalConfig.title}</Text>
+               <Text style={styles.modalMessage}>{modalConfig.message}</Text>
+               {!modalConfig.isSuccess && (
+                 <TouchableOpacity 
+                   style={styles.modalButton} 
+                   activeOpacity={0.8}
+                   onPress={() => setModalVisible(false)}
+                 >
+                   <Text style={styles.modalButtonText}>OK</Text>
+                 </TouchableOpacity>
+               )}
+             </View>
+           </View>
+         </Modal>
       <ScrollView 
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
@@ -96,7 +175,7 @@ const LoginScreen = ({ navigation }) => {
             icon={<FontAwesomeFreeSolid name="envelope" size={18} color={COLORS.logoBg} />}
           />
 
-          <Input
+          {/* <Input
             label="Password"
             placeholder="Enter your password"
             value={password}
@@ -104,10 +183,33 @@ const LoginScreen = ({ navigation }) => {
             secureTextEntry={true}
             autoCapitalize='none'
             icon={<FontAwesomeFreeSolid name="lock" size={18} color={COLORS.logoBg} />}
-          />
+          /> */}
+
+          <View style={styles.passwordWrapper}>
+                <Input
+                  label="Password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize='none'
+                  icon={<FontAwesomeFreeSolid name="lock" size={18} color={COLORS.logoBg} />}
+                />
+                <TouchableOpacity 
+                  style={styles.eyeIcon} 
+                  activeOpacity={0.7}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <FontAwesomeFreeSolid 
+                    name={showPassword ? "eye" : "eye-slash"} 
+                    size={18} 
+                    color={COLORS.primary} 
+                  />
+                </TouchableOpacity>
+            </View>
 
           <View style={styles.optionsRow}>
-            <TouchableOpacity 
+            {/* <TouchableOpacity 
               style={styles.checkboxContainer} 
               activeOpacity={0.8}
               onPress={() => setRememberMe(!rememberMe)}
@@ -116,7 +218,7 @@ const LoginScreen = ({ navigation }) => {
                 {rememberMe && <FontAwesomeFreeSolid name="check" size={12} color={COLORS.white} />}
               </View>
               <Text style={styles.checkboxLabel}>Remember me</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             <TouchableOpacity activeOpacity={0.7} onPress={() => navigation.navigate('VerifyEmailScreen')}>
               <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
@@ -223,7 +325,7 @@ const styles = StyleSheet.create({
   },
   optionsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     marginVertical: 14,
   },
@@ -324,4 +426,70 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontFamily: FONTS.REGULAR
   },
+
+  passwordWrapper: {
+  position: 'relative',
+  justifyContent: 'center',
+},
+eyeIcon: {
+  position: 'absolute',
+  right: 14,
+  top: 41,
+  padding: 4,
+},
+modalOverlay: {
+  flex: 1,
+  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  justifyContent: 'center',
+  alignItems: 'center',
+  paddingHorizontal: 24,
+},
+modalContent: {
+  width: '100%',
+  backgroundColor: COLORS.white,
+  borderRadius: 16,
+  padding: 24,
+  alignItems: 'center',
+  elevation: 5,
+},
+modalIconBg: {
+  width: 48,
+  height: 48,
+  borderRadius: 24,
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginBottom: 12,
+},
+successBg: {
+  backgroundColor: '#2e7d32',
+},
+errorBg: {
+  backgroundColor: '#d32f2f',
+},
+modalTitle: {
+  fontSize: 18,
+  fontFamily: FONTS.SEMIBOLD,
+  color: COLORS.primary,
+  marginBottom: 8,
+},
+modalMessage: {
+  fontSize: 14,
+  fontFamily: FONTS.REGULAR,
+  color: COLORS.textLight,
+  textAlign: 'center',
+  marginBottom: 20,
+},
+modalButton: {
+  backgroundColor: COLORS.primary,
+  width: '100%',
+  paddingVertical: 12,
+  borderRadius: 8,
+  alignItems: 'center',
+},
+modalButtonText: {
+  color: COLORS.white,
+  fontSize: 14,
+  fontFamily: FONTS.SEMIBOLD,
+},
+
 });

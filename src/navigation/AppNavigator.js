@@ -5,7 +5,6 @@ import { useAppSelector } from '../redux/hooks';
 import LoginScreen from '../screens/auth/LoginScreen';
 import SignupScreen from '../screens/auth/SignupScreen';
 import VerifyEmailScreen from '../screens/auth/VerifyEmailScreen';
-import CompleteProfileScreen from '../screens/auth/CompleteProfileScreen';
 import SplashScreen from '../screens/auth/SplashScreen';
 import OnboardingScreen from '../screens/auth/OnboardingScreen';
 import SettingsScreen from '../screens/main/SettingsScreen';
@@ -22,14 +21,11 @@ import AddPhotosScreen from '../screens/auth/AddPhotosScreen';
 import ProfessionalDetailsScreen from '../screens/auth/ProfessionalDetailsScreen';
 import YourInterestScreen from '../screens/auth/YourInterestScreen';
 import GetStartedScreen from '../screens/auth/GetStartedScreen';
-import PremiumPlansScreen from '../screens/premium/PremiumPlansScreen';
-import PaymentMethodScreen from '../screens/premium/PaymentMethodScreen';
-import PaymentInitiatedScreen from '../screens/premium/PaymentInitiatedScreen';
+
 
 import { getFCMToken, initNotificationListeners } from '../utils/notificationService';
 import ResetPasswordScreen from '../screens/auth/ResetPasswordScreen';
 import ChatRoomScreen from '../screens/main/ChatRoomScreen';
-import PremiumPlans from '../screens/premium/PremiumPlans';
 import ViewProfileScreen from '../screens/main/ViewProfileScreen';
 
 const Stack = createNativeStackNavigator();
@@ -39,41 +35,41 @@ const AppNavigator = () => {
   const isLoggedIn = useAppSelector((state) => state.auth.isLoggedIn)
   const userId = useAppSelector((state) => state.auth.userId);
 
-  // useEffect(() => {
-
-  //   if (isLoggedIn && userId) {
-  //     getFCMToken(userId);
-
-  //     let cleanUpListeners;
-  //     initNotificationListeners(userId).then((unsub) => {
-  //       cleanUpListeners = unsub;
-  //     });
-
-  //     return () => {
-  //       if (cleanUpListeners) cleanUpListeners();
-  //     };
-  //   }
-  // }, [isLoggedIn, userId]);
-
   useEffect(() => {
-  if (!isLoggedIn || !userId) return;
 
-  getFCMToken(userId);
+    if (isLoggedIn && userId) {
+      getFCMToken(userId);
 
-  let unsubscribe;
+      let cleanUpListeners;
+      initNotificationListeners(userId).then((unsub) => {
+        cleanUpListeners = unsub;
+      });
 
-  const setup = async () => {
-    unsubscribe = await initNotificationListeners(userId);
-  };
-
-  setup();
-
-  return () => {
-    if (unsubscribe) {
-      unsubscribe();
+      return () => {
+        if (cleanUpListeners) cleanUpListeners();
+      };
     }
-  };
-}, [isLoggedIn, userId]);
+  }, [isLoggedIn, userId]);
+
+//   useEffect(() => {
+//   if (!isLoggedIn || !userId) return;
+
+//   getFCMToken(userId);
+
+//   let unsubscribe;
+
+//   const setup = async () => {
+//     unsubscribe = await initNotificationListeners(userId);
+//   };
+
+//   setup();
+
+//   return () => {
+//     if (unsubscribe) {
+//       unsubscribe();
+//     }
+//   };
+// }, [isLoggedIn, userId]);
 
   return (
     <NavigationContainer>
@@ -106,11 +102,7 @@ const AppNavigator = () => {
         <Stack.Screen name='ProfessionalDetailsScreen' component={ProfessionalDetailsScreen} options={{ headerShown: false}}/>
         <Stack.Screen name='YourInterestScreen' component={YourInterestScreen} options={{ headerShown: false}}/>
         <Stack.Screen name='TabNavigator' component={TabNavigator} options={{ headerShown: false }}/>
-        <Stack.Screen name='PremiumPlansScreen' component={PremiumPlansScreen} options={{ headerShown: false }}/>
-        <Stack.Screen name='PaymentMethodScreen' component={PaymentMethodScreen} options={{ headerShown: false }}/>
-        <Stack.Screen name='PaymentInitiatedScreen' component={PaymentInitiatedScreen} options={{ headerShown: false }}/>
         <Stack.Screen name='ChatRoomScreen' component={ChatRoomScreen} options={{ headerShown: false }}/>
-        <Stack.Screen name='PremiumPlans' component={PremiumPlans} options={{ headerShown: false }}/>
         <Stack.Screen name='ViewProfileScreen' component={ViewProfileScreen} options={{ headerShown: false }}/>
         
         </>

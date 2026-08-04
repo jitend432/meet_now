@@ -15,6 +15,7 @@ import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { authApi } from '../../services/authApi';
 import { setUserProfile } from '../../redux/slices/authSlice';
 import { updateProfileDraft } from '../../redux/slices/authSlice';
+import { COLORS } from '../../constants/theme';
 
 export default function LifestyleScreen({navigation}) {
 
@@ -115,7 +116,7 @@ export default function LifestyleScreen({navigation}) {
         {/* Header Section with Image Logo */}
         <View style={styles.headerRow}>
           <Image 
-            source={require('../../assets/images/hexadating.png')} 
+            source={require('../../assets/images/vynk_t.png')} 
             style={styles.logoImage}
             resizeMode="contain"
           />
@@ -214,12 +215,12 @@ export default function LifestyleScreen({navigation}) {
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.background,
     padding: 16,
     justifyContent: 'center',
   },
   cardContainer: {
-    backgroundColor: '#fef6d1', 
+    backgroundColor: COLORS.background, 
     borderRadius: 15,
     padding: 20,
     shadowColor: '#000',

@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../../constants/theme';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
-import LogoImage from '../../assets/images/hexadating.png';
+import LogoImage from '../../assets/images/vynk_t.png';
 import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-free-solid/static";
 import Dropdown from '../../components/common/Dropdown';
 
@@ -112,10 +112,10 @@ const handleContinue = () => {
           <View style={styles.progressWrapper}>
             <View style={styles.progressTextRow}>
               <Text style={styles.progressStepLabel}>Step 4 of 5</Text>
-              <Text style={styles.progressPercentageMetric}>75%</Text>
+              <Text style={styles.progressPercentageMetric}>55%</Text>
             </View>
             <View style={styles.progressTrackBackground}>
-              <View style={[styles.progressTrackFill, { width: '75%' }]} />
+              <View style={[styles.progressTrackFill, { width: '55%' }]} />
             </View>
           </View>
 
@@ -204,7 +204,7 @@ export default ProfessionalDetailsScreen;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.background,
   },
   scrollContainer: {
     flexGrow: 1,

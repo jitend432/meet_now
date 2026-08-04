@@ -15,6 +15,7 @@ import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { authApi } from '../../services/authApi';
 import { setUserProfile } from '../../redux/slices/authSlice';
 import { updateProfileDraft, clearProfileDraft } from '../../redux/slices/authSlice';
+import { COLORS } from '../../constants/theme';
 
 export default function LookingForScreen({navigation}) {
 
@@ -123,7 +124,7 @@ const handleComplete = async () => {
         
         <View style={styles.headerRow}>
           <Image 
-            source={require('../../assets/images/hexadating.png')} 
+            source={require('../../assets/images/vynk_t.png')} 
             style={styles.logoImage}
             resizeMode="contain"
           />
@@ -134,10 +135,10 @@ const handleComplete = async () => {
         <View style={styles.progressContainer}>
           <View style={styles.progressTextRow}>
             <Text style={styles.progressSub}>Step 4 of 5</Text>
-            <Text style={styles.progressPercent}>75%</Text>
+            <Text style={styles.progressPercent}>95%</Text>
           </View>
           <View style={styles.progressBarBackground}>
-            <View style={[styles.progressBarFill, { width: '75%' }]} />
+            <View style={[styles.progressBarFill, { width: '95%' }]} />
           </View>
         </View>
 
@@ -192,12 +193,12 @@ const handleComplete = async () => {
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.background,
     padding: 16,
     justifyContent: 'center',
   },
   cardContainer: {
-    backgroundColor: '#fef6d1', 
+    backgroundColor: COLORS.background, 
     borderRadius: 15,
     padding: 20,
     shadowColor: '#000',

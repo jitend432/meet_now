@@ -2,20 +2,24 @@ import apiService from '../services/apiService';
 
 export const matchApi = {
 
-handleLikeDislike: async (targetUserId, actionType) => {
-  if (!targetUserId || !actionType) {
-    console.error("handleLikeDislike Error: Missing targetUserId or actionType.");
-    return null;
-  }
-  
-  const payload = {
-    targetUserId: targetUserId,
-    action: actionType.toUpperCase() // Handles 'LIKE', 'DISLIKE', 'SUPERLIKE' safely
-  };
+handleLikeDislike: async (receiverId, action) => {
+    if (!receiverId || !action) {
+      console.error("handleLikeDislike Error: Missing receiverId or action.");
+      return null;
+    }
 
-  const response = await apiService.post('/likeMatch/like-dislike', payload);
-  return response.data;
-},
+    const payload = {
+      receiverId: Number(receiverId), // Ensured Number type for Java backend
+      action: action.toUpperCase()   // "LIKE", "DISLIKE", "SUPER_LIKE"
+    };
+
+    console.log("🚀 SENDING PAYLOAD TO BACKEND /likeMatch/like-dislike ====>", JSON.stringify(payload));
+
+    const response = await apiService.post('/likeMatch/like-dislike', payload);
+    
+    console.log("✅ BACKEND RESPONSE ====>", response.data);
+    return response.data;
+  },
 
 getWhoLikedMe: async (pageNumber = 0, pageSize = 10) => {
   const response = await apiService.get(

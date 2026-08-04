@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   StyleSheet, 
   Text, 
@@ -25,9 +25,9 @@ import CardContainer from '../../components/chat/CardContainer';
 import userApi from '../../services/userApi';
 import { matchApi } from '../../services/matchApi';
 import { FONTS } from '../../constants/fonts';
-import { photoApi } from '../../services/photoApi'; // Import already present
+import { photoApi } from '../../services/photoApi';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.4;
 
 const DiscoverScreen = () => {
@@ -37,21 +37,30 @@ const DiscoverScreen = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [isAboutVisible, setIsAboutVisible] = useState(false);
+
+  const isSwiping = useRef(false);
   
   // New States for User Photos
   const [userPhotos, setUserPhotos] = useState([]);
   const [isPhotosLoading, setIsPhotosLoading] = useState(false);
 
+  // Shared Values for Card Dragging
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const contextX = useSharedValue(0);
   const contextY = useSharedValue(0);
 
+  // Shared Values for Flying Feedback Animation (LIKE / DISLIKE / SUPER_LIKE)
+  const feedbackOpacity = useSharedValue(0);
+  const feedbackScale = useSharedValue(0);
+  const feedbackTranslateY = useSharedValue(0);
+  const [feedbackType, setFeedbackType] = useState('LIKE'); // 'LIKE' | 'DISLIKE' | 'SUPER_LIKE'
+
   const rawProfile = profiles[currentIndex] || {};
   
   const currentProfile = {
     ...rawProfile,
-    id: rawProfile.id,
+    id: rawProfile.id || rawProfile._id || rawProfile.userId,
     name: rawProfile.fullName || 'User',
     age: rawProfile.age !== null && rawProfile.age !== undefined ? rawProfile.age : '',
     bio: rawProfile.bio || 'No bio provided.',
@@ -67,7 +76,6 @@ const DiscoverScreen = () => {
     fetchNearbyProfiles();
   }, []);
 
-  // Effect: Jab bhi currentIndex ya profiles badlenge, automatic current user ki photos fetch hongi
   useEffect(() => {
     if (profiles.length > 0 && currentIndex < profiles.length && currentProfile.id) {
       fetchCurrentProfilePhotos(currentProfile.id);
@@ -92,16 +100,13 @@ const DiscoverScreen = () => {
     }
   };
 
-  // API handler to fetch photos for the active user card
   const fetchCurrentProfilePhotos = async (userId) => {
     try {
       setIsPhotosLoading(true);
       const response = await photoApi.getUserPhotos(userId);
       console.log(`Photos for User ${userId} ====> `, response);
       
-      
       setUserPhotos(response?.data || []);
-      //console.log("show this image=======> ",userPhotos)
     } catch (error) {
       console.error(`Failed to fetch photos for user ${userId}:`, error);
       setUserPhotos([]); 
@@ -109,43 +114,183 @@ const DiscoverScreen = () => {
       setIsPhotosLoading(false);
     }
   };
-  console.log("show this image=======> ",userPhotos[0]?.photoUrl)
 
-  const handleSwipeAction = async (direction) => {
-    if (!currentProfile) return;
+  // Flying Animation Helper for LIKE, DISLIKE & SUPER_LIKE
+  const triggerFloatingAnimation = (type) => {
+    setFeedbackType(type);
+    feedbackOpacity.value = 1;
+    feedbackScale.value = 0.5;
+    feedbackTranslateY.value = 0;
 
-    const targetUserId = currentProfile.id;
-    const actionType = direction === 'right' ? 'LIKE' : 'DISLIKE';
-
-    console.log(`Swiped ${direction} on user: ${currentProfile.name}`);
-
-    try {
-      await matchApi.handleLikeDislike(targetUserId, actionType);
-    } catch (error) {
-      console.error('Failed to sync swipe with backend:', error);
-    }
-
-    translateX.value = 0;
-    translateY.value = 0;
-    contextX.value = 0;
-    contextY.value = 0;
-
-    setUserPhotos([]);
-
-    if (currentIndex < profiles.length - 1) {
-      setCurrentIndex(prev => prev + 1);
-    } else {
-      setCurrentIndex(profiles.length);
-    }
+    feedbackScale.value = withSpring(1.5);
+    feedbackTranslateY.value = withTiming(-200, { duration: 650 });
+    feedbackOpacity.value = withTiming(0, { duration: 650 });
   };
+
+  // Common Action Handler (LIKE, DISLIKE, SUPER_LIKE)
+  // const executeUserAction = async (actionType) => {
+  //   if (!currentProfile) return;
+
+  //   const receiverId = currentProfile.id;
+
+  //   // Trigger Floating Animation UI Feedback
+  //   triggerFloatingAnimation(actionType);
+
+  //   console.log(`Action: ${actionType} on user: ${currentProfile.name} (receiverId: ${receiverId})`);
+
+  //   if (receiverId) {
+  //     try {
+  //       // API Payload structure matching Swagger API spec: { receiverId, action }
+  //       await matchApi.handleLikeDislike(receiverId, actionType);
+  //     } catch (error) {
+  //       console.error('Failed to sync action with backend:', error?.response?.data || error.message);
+  //     }
+  //   } else {
+  //     console.warn('Cannot sync action: receiverId is missing');
+  //   }
+
+  //   translateX.value = 0;
+  //   translateY.value = 0;
+  //   contextX.value = 0;
+  //   contextY.value = 0;
+
+  //   setUserPhotos([]);
+
+  //   if (currentIndex < profiles.length - 1) {
+  //     setCurrentIndex(prev => prev + 1);
+  //   } else {
+  //     setCurrentIndex(profiles.length);
+  //   }
+  // };
+
+// const executeUserAction = async (actionType) => {
+//     if (!currentProfile) return;
+
+//     const receiverId = Number(currentProfile.id);
+
+//     triggerFloatingAnimation(actionType);
+
+//     console.log(`Action: ${actionType} on user: ${currentProfile.name} (receiverId: ${receiverId})`);
+
+//     if (receiverId && !isNaN(receiverId)) {
+//       try {
+//         // Backend payload requirement: { receiverId: Number, action: String }
+//         await matchApi.handleLikeDislike(receiverId, actionType);
+//       } catch (error) {
+//         console.error('Failed to sync action with backend:', error?.response?.data || error.message);
+//       }
+//     } else {
+//       console.warn('Cannot sync action: Invalid receiverId');
+//     }
+
+//     translateX.value = 0;
+//     translateY.value = 0;
+//     contextX.value = 0;
+//     contextY.value = 0;
+
+//     setUserPhotos([]);
+
+//     if (currentIndex < profiles.length - 1) {
+//       setCurrentIndex(prev => prev + 1);
+//     } else {
+//       setCurrentIndex(profiles.length);
+//     }
+//   };
+
+
+  const executeUserAction = async (actionType) => {
+  if (!currentProfile || isSwiping.current) return;
+
+  // Apply swipe lock
+  isSwiping.current = true;
+
+  const receiverId = Number(currentProfile.id);
+
+  triggerFloatingAnimation(actionType);
+
+  if (receiverId && !isNaN(receiverId)) {
+    try {
+      await matchApi.handleLikeDislike(receiverId, actionType);
+    } catch (error) {
+      console.error('Failed to sync action with backend:', error?.response?.data || error.message);
+    }
+  }
+
+  translateX.value = 0;
+  translateY.value = 0;
+  contextX.value = 0;
+  contextY.value = 0;
+
+  setUserPhotos([]);
+
+  if (currentIndex < profiles.length - 1) {
+    setCurrentIndex(prev => prev + 1);
+  } else {
+    setCurrentIndex(profiles.length);
+  }
+
+  // Release lock
+  setTimeout(() => {
+    isSwiping.current = false;
+  }, 300);
+};
+
+  const handleSwipeAction = (direction) => {
+    const actionType = direction === 'right' ? 'LIKE' : 'DISLIKE';
+    executeUserAction(actionType);
+  };
+
+  // const forceSwipe = (direction) => {
+  //   if (isLoading || !currentProfile) return;
+  //   const targetX = direction === 'right' ? SCREEN_WIDTH + 150 : -SCREEN_WIDTH - 150;
+  //   translateX.value = withTiming(targetX, { duration: 250 }, () => {
+  //     runOnJS(handleSwipeAction)(direction);
+  //   });
+  // };
 
   const forceSwipe = (direction) => {
-    if (isLoading || !currentProfile) return;
-    const targetX = direction === 'right' ? SCREEN_WIDTH + 150 : -SCREEN_WIDTH - 150;
-    translateX.value = withTiming(targetX, { duration: 250 }, () => {
+  if (isLoading || !currentProfile || isSwiping.current) return;
+  const targetX = direction === 'right' ? SCREEN_WIDTH + 150 : -SCREEN_WIDTH - 150;
+  translateX.value = withTiming(targetX, { duration: 250 }, (isFinished) => {
+    if (isFinished) {
       runOnJS(handleSwipeAction)(direction);
+    }
+  });
+};
+
+  // Handle Star Button Click -> SUPER_LIKE
+  const handleSuperLike = () => {
+    if (isLoading || !currentProfile) return;
+    // Animate card upwards for superlike feel
+    translateY.value = withTiming(-SCREEN_HEIGHT / 2, { duration: 250 }, () => {
+      runOnJS(executeUserAction)('SUPER_LIKE');
     });
   };
+
+  // const gesture = Gesture.Pan()
+  //   .enabled(!isLoading && !!currentProfile)
+  //   .onStart(() => {
+  //     contextX.value = translateX.value;
+  //     contextY.value = translateY.value;
+  //   })
+  //   .onUpdate((event) => {
+  //     translateX.value = contextX.value + event.translationX;
+  //     translateY.value = contextY.value + event.translationY;
+  //   })
+  //   .onEnd((event) => {
+  //     if (event.velocityX > 500 || translateX.value > SWIPE_THRESHOLD) {
+  //       translateX.value = withTiming(SCREEN_WIDTH + 150, { duration: 200 }, () => {
+  //         runOnJS(handleSwipeAction)('right');
+  //       });
+  //     } else if (event.velocityX < -500 || translateX.value < -SWIPE_THRESHOLD) {
+  //       translateX.value = withTiming(-SCREEN_WIDTH - 150, { duration: 200 }, () => {
+  //         runOnJS(handleSwipeAction)('left');
+  //       });
+  //     } else {
+  //       translateX.value = withSpring(0, { damping: 15 });
+  //       translateY.value = withSpring(0, { damping: 15 });
+  //     }
+  //   });
 
   const gesture = Gesture.Pan()
     .enabled(!isLoading && !!currentProfile)
@@ -157,20 +302,50 @@ const DiscoverScreen = () => {
       translateX.value = contextX.value + event.translationX;
       translateY.value = contextY.value + event.translationY;
     })
+    // .onEnd((event) => {
+    //   // Direct return if already processing a swipe
+    //   if (isSwiping.current) return;
+
+    //   const isFastRight = event.velocityX > 800;
+    //   const isFastLeft = event.velocityX < -800;
+    //   const isPastRightThreshold = translateX.value > SWIPE_THRESHOLD;
+    //   const isPastLeftThreshold = translateX.value < -SWIPE_THRESHOLD;
+
+    //   if (isFastRight || isPastRightThreshold) {
+    //     translateX.value = withTiming(SCREEN_WIDTH + 150, { duration: 200 }, () => {
+    //       runOnJS(handleSwipeAction)('right');
+    //     });
+    //   } else if (isFastLeft || isPastLeftThreshold) {
+    //     translateX.value = withTiming(-SCREEN_WIDTH - 150, { duration: 200 }, () => {
+    //       runOnJS(handleSwipeAction)('left');
+    //     });
+    //   } else {
+    //     translateX.value = withSpring(0, { damping: 15 });
+    //     translateY.value = withSpring(0, { damping: 15 });
+    //   }
+    // });
+
     .onEnd((event) => {
-      if (event.velocityX > 500 || translateX.value > SWIPE_THRESHOLD) {
-        translateX.value = withTiming(SCREEN_WIDTH + 150, { duration: 200 }, () => {
-          runOnJS(handleSwipeAction)('right');
-        });
-      } else if (event.velocityX < -500 || translateX.value < -SWIPE_THRESHOLD) {
-        translateX.value = withTiming(-SCREEN_WIDTH - 150, { duration: 200 }, () => {
-          runOnJS(handleSwipeAction)('left');
-        });
-      } else {
-        translateX.value = withSpring(0, { damping: 15 });
-        translateY.value = withSpring(0, { damping: 15 });
-      }
+  if (isSwiping.current) return;
+
+  const isFastRight = event.velocityX > 800;
+  const isFastLeft = event.velocityX < -800;
+  const isPastRightThreshold = translateX.value > SWIPE_THRESHOLD;
+  const isPastLeftThreshold = translateX.value < -SWIPE_THRESHOLD;
+
+  if (isFastRight || isPastRightThreshold) {
+    translateX.value = withTiming(SCREEN_WIDTH + 150, { duration: 200 }, (isFinished) => {
+      if (isFinished) runOnJS(handleSwipeAction)('right');
     });
+  } else if (isFastLeft || isPastLeftThreshold) {
+    translateX.value = withTiming(-SCREEN_WIDTH - 150, { duration: 200 }, (isFinished) => {
+      if (isFinished) runOnJS(handleSwipeAction)('left');
+    });
+  } else {
+    translateX.value = withSpring(0, { damping: 15 });
+    translateY.value = withSpring(0, { damping: 15 });
+  }
+})
 
   const cardAnimatedStyle = useAnimatedStyle(() => {
     const rotate = interpolate(
@@ -187,6 +362,30 @@ const DiscoverScreen = () => {
       ]
     };
   });
+
+  const feedbackAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: feedbackOpacity.value,
+      transform: [
+        { scale: feedbackScale.value },
+        { translateY: feedbackTranslateY.value }
+      ]
+    };
+  });
+
+  // Get icon configuration based on action type
+  const getFeedbackIconDetails = () => {
+    switch(feedbackType) {
+      case 'LIKE':
+        return { name: "heart", color: "#e91e63" };
+      case 'DISLIKE':
+        return { name: "times-circle", color: "#f44336" };
+      case 'SUPER_LIKE':
+        return { name: "star", color: "#ffb300" };
+      default:
+        return { name: "heart", color: "#e91e63" };
+    }
+  };
 
   if (isLoading) {
     return (
@@ -228,12 +427,23 @@ const DiscoverScreen = () => {
     );
   }
 
+  const feedbackIcon = getFeedbackIconDetails();
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
         <CardContainer title="Vynk Dating">
           <View style={styles.mainLayoutContainer}>
             
+            {/* FLOATING FEEDBACK ICON (LIKE / DISLIKE / SUPER_LIKE) */}
+            <Animated.View pointerEvents="none" style={[styles.floatingFeedbackContainer, feedbackAnimatedStyle]}>
+              <FontAwesomeFreeSolid 
+                name={feedbackIcon.name} 
+                size={80} 
+                color={feedbackIcon.color} 
+              />
+            </Animated.View>
+
             <View style={styles.cardWrapper}>
               <GestureDetector gesture={gesture}>
                 <Animated.View style={[styles.animatedCardContainer, cardAnimatedStyle]}>
@@ -242,8 +452,8 @@ const DiscoverScreen = () => {
                   source={
                     currentProfile?.profilePhoto 
                       ? 
-                      { uri:  currentProfile.profilePhoto  }
-                      :  require('../../assets/images/img.jpg') 
+                      { uri: currentProfile.profilePhoto }
+                      : require('../../assets/images/img.jpg') 
                   } 
                   style={styles.backgroundImage}
                   imageStyle={styles.cardImageRadius}
@@ -278,15 +488,21 @@ const DiscoverScreen = () => {
               </GestureDetector>
             </View>
 
+            {/* ACTION BUTTONS ROW */}
             <View style={styles.actionButtonsRow}>
+              {/* DISLIKE BUTTON */}
               <TouchableOpacity onPress={() => forceSwipe('left')} style={[styles.circleButton, styles.dislikeButton]} activeOpacity={0.8}>
-                <FontAwesomeFreeSolid name="times" size={24} color="#4caf50" />
+                <FontAwesomeFreeSolid name="times" size={24} color="#f44336" />
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.circleButton, styles.superLikeButton]} activeOpacity={0.8}>
-                <FontAwesomeFreeSolid name="star" size={22} color="#81c784" />
+              
+              {/* SUPER LIKE BUTTON */}
+              <TouchableOpacity onPress={handleSuperLike} style={[styles.circleButton, styles.superLikeButton]} activeOpacity={0.8}>
+                <FontAwesomeFreeSolid name="star" size={22} color="#ffb300" />
               </TouchableOpacity>
+              
+              {/* LIKE BUTTON */}
               <TouchableOpacity onPress={() => forceSwipe('right')} style={[styles.circleButton, styles.likeButton]} activeOpacity={0.8}>
-                <FontAwesomeFreeSolid name="heart" size={24} color="#265c32" />
+                <FontAwesomeFreeSolid name="heart" size={24} color="#e91e63" />
               </TouchableOpacity>
             </View>
 
@@ -313,6 +529,15 @@ const DiscoverScreen = () => {
                 />
                 
                 <View style={styles.aboutCard}>
+            
+                   <TouchableOpacity 
+                     style={styles.closeCardButton} 
+                     onPress={() => setIsAboutVisible(false)}
+                     activeOpacity={0.7}
+                   >
+                     <FontAwesomeFreeSolid name="times" size={18} color="#265c32" />
+                   </TouchableOpacity>
+                   
                   <Text style={styles.aboutTitle}>About {currentProfile.name}</Text>
                   
                   <Text style={styles.aboutDescription}>{currentProfile.bio}</Text>
@@ -329,7 +554,6 @@ const DiscoverScreen = () => {
                     <Text style={styles.modalInfoText}>{currentProfile.profession || currentProfile.role}</Text>
                   </View>
 
-                  {/* --- INTEGRATED PHOTOS INTERFACE INSIDE THE MODAL --- */}
                   <Text style={styles.interestsSubheading}>Photos</Text>
                   {isPhotosLoading ? (
                     <ActivityIndicator size="small" color="#265c32" style={{ marginVertical: 10 }} />
@@ -338,7 +562,7 @@ const DiscoverScreen = () => {
                       {userPhotos.map((photo, index) => {
                         const photoUrl = `https://your-backend-api-domain.com${photo.url || photo.imagePath}`;
                         return (
-                          <View key={photo.id || index} style={{ marginRight: 8, marginBottom: 8 }}>
+                          <View key={photo.id || photo._id || index} style={{ marginRight: 8, marginBottom: 8 }}>
                             <Animated.Image 
                               source={{ uri: photoUrl }} 
                               style={{ width: 70, height: 70, borderRadius: 8, backgroundColor: '#eee' }} 
@@ -350,7 +574,6 @@ const DiscoverScreen = () => {
                   ) : (
                     <Text style={[styles.modalInfoText, { fontStyle: 'italic', color: '#888' }]}>No extra photos uploaded.</Text>
                   )}
-                  {/* -------------------------------------------------- */}
 
                   {currentProfile.interests && currentProfile.interests.length > 0 && (
                     <>
@@ -380,14 +603,20 @@ export default DiscoverScreen;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    //backgroundColor: '#9c6644', 
   },
   mainLayoutContainer: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingTop: 21,
     alignItems: 'center',
     justifyContent: 'space-between',
+    position: 'relative',
+  },
+  floatingFeedbackContainer: {
+    position: 'absolute',
+    top: '35%',
+    zIndex: 9999,
+    alignSelf: 'center',
   },
   noMoreContainer: {
     flex: 1,
@@ -396,9 +625,8 @@ const styles = StyleSheet.create({
   },
   noMoreText: {
     fontSize: 18,
-    //fontWeight: '700',
     color: '#760909',
-    fontFamily:  FONTS.REGULAR
+    fontFamily: FONTS.REGULAR
   },
   retryButton: {
     marginTop: 16,
@@ -494,19 +722,19 @@ const styles = StyleSheet.create({
   },
   dislikeButton: {
     borderWidth: 1.5,
-    borderColor: '#a5d6a7',
+    borderColor: '#f44336',
   },
   superLikeButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
     borderWidth: 1,
-    borderColor: '#c8e6c9',
+    borderColor: '#ffb300',
     marginHorizontal: 6,
   },
   likeButton: {
     borderWidth: 1.5,
-    borderColor: '#265c32',
+    borderColor: '#e91e63',
   },
   paginationText: {
     marginVertical: 12,
@@ -536,6 +764,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 10,
+    position: 'relative',
   },
   aboutTitle: {
     fontSize: 20,
@@ -592,4 +821,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+
+  closeCardButton: {
+  position: 'absolute',
+  top: 16,
+  right: 16,
+  width: 32,
+  height: 32,
+  borderRadius: 16,
+  backgroundColor: 'rgba(38, 92, 50, 0.12)',
+  justifyContent: 'center',
+  alignItems: 'center',
+  zIndex: 10,
+},
 });

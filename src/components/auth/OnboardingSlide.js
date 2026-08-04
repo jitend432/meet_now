@@ -1,5 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, Image } from 'react-native';
+import { FONTS } from '../../constants/fonts';
+import { FONTSIZE } from '../../constants/theme';
 
 const OnboardingSlide = ({ item, width }) => {
   return (
@@ -29,12 +31,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: 26,
-    fontWeight: '700',
+    fontSize: FONTSIZE.xl,
     textAlign: 'center',
     color: '#111111',
     marginBottom: 16,
     lineHeight: 34,
+    fontFamily: FONTS.MEDIUM
   },
   description: {
     fontSize: 14,
@@ -42,6 +44,8 @@ const styles = StyleSheet.create({
     color: '#666666',
     lineHeight: 22,
     marginBottom: 40,
+    fontFamily: FONTS.MEDIUM
+
   },
   imageWrapper: {
     width: '100%',

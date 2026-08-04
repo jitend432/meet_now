@@ -3,6 +3,7 @@ import { StyleSheet, View, FlatList, useWindowDimensions, StatusBar } from 'reac
 import { SafeAreaView } from 'react-native-safe-area-context';
 import OnboardingSlide from '../../components/auth/OnboardingSlide';
 import Button from '../../components/common/Button';
+import { COLORS } from '../../constants/theme';
 
 
 const onboardingData = [
@@ -66,7 +67,7 @@ const OnboardingScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.topHeader}>
-        <StatusBar hidden={true} animation="slide" />
+         <StatusBar backgroundColor={COLORS.white} barStyle="dark-content" />
         <Button 
           title="Skip" 
           variant="skip" 

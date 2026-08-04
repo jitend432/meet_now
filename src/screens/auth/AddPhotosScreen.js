@@ -129,7 +129,7 @@ const AddPhotosScreen = ({ navigation }) => {
 
           {/* Headings */}
           <Text style={styles.mainStepTitle}>Add Your Photo</Text>
-          <Text style={styles.subStepTitle}>Upload a profile photo to get started</Text>
+          <Text style={styles.subStepTitle}>Upload a profile photo to get started. Photo size must be under 1 MB.</Text>
 
           {/* Center Aligned Single Image Upload Slot */}
           <View style={styles.singleUploadContainer}>
@@ -177,15 +177,13 @@ const AddPhotosScreen = ({ navigation }) => {
   );
 };
 
-// ... Keep your existing StyleSheet configuration block unchanged
-
 
 export default AddPhotosScreen;
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#ffffff', // Behind card background is clean white
+    backgroundColor: COLORS.background, 
   },
   scrollContainer: {
     flexGrow: 1,
