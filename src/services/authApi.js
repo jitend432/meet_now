@@ -15,11 +15,6 @@ export const authApi = {
     return response.data;
   },
 
-  // // 3. Verify OTP API
-  // verifyOtp: async (email, otp) => {
-  //   const response = await apiService.post('/auth/verify-otp', { email, otp });
-  //   return response.data;
-  // },
 
   updateProfile: async (id, profileData) => {
     const response = await apiService.put(`/users/update/${id}`, profileData);
@@ -87,6 +82,18 @@ resetPassword: async (email, otp, password, confirmPassword) => {
     otp, 
     password, 
     confirmPassword 
+  });
+  return response.data;
+},
+
+ 
+
+ deleteUser: async (id, remark) => {
+  const response = await apiService.delete('/userRegistration/delete', {
+    params: {
+      id: Number(id),
+      remark: remark || '',
+    },
   });
   return response.data;
 },

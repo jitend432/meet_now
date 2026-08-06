@@ -22,7 +22,14 @@ const initialState = {
     smokingHabit: null,
     hopingToFind: null,
     lookingFor: null,
-  }  
+  },  
+
+  discoverySettings: {
+    distance: 5, // default distance in km
+    minAge: 18,   // default min age
+    maxAge: 60,   // default max age
+  },
+
 };
 
 const authSlice = createSlice({
@@ -75,6 +82,13 @@ const authSlice = createSlice({
       state.profileDraft = initialState.profileDraft;
     },
 
+    updateDiscoverySettings: (state, action) => {
+      state.discoverySettings = {
+        ...state.discoverySettings,
+        ...action.payload,
+      };
+    },
+
     logout: (state) => {
       state.token = null;
       state.refreshToken = null;
@@ -82,11 +96,19 @@ const authSlice = createSlice({
       state.profileId = null;
       state.isLoggedIn = false;
       state.user = null;
+      state.discoverySettings = initialState.discoverySettings;
       state.profileDraft = initialState.profileDraft;
     },
     
   },
 });
 
-export const { setCredentials, logout, setUserProfile, updateProfileDraft, clearProfileDraft } = authSlice.actions;
+export const { 
+  setCredentials, 
+  logout, 
+  setUserProfile, 
+  updateDiscoverySettings,
+  updateProfileDraft, 
+  clearProfileDraft 
+} = authSlice.actions;
 export default authSlice.reducer;

@@ -27,6 +27,7 @@ import { getFCMToken, initNotificationListeners } from '../utils/notificationSer
 import ResetPasswordScreen from '../screens/auth/ResetPasswordScreen';
 import ChatRoomScreen from '../screens/main/ChatRoomScreen';
 import ViewProfileScreen from '../screens/main/ViewProfileScreen';
+import DeleteAccountScreen from '../screens/main/DeleteAccountScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -104,6 +105,7 @@ const AppNavigator = () => {
         <Stack.Screen name='TabNavigator' component={TabNavigator} options={{ headerShown: false }}/>
         <Stack.Screen name='ChatRoomScreen' component={ChatRoomScreen} options={{ headerShown: false }}/>
         <Stack.Screen name='ViewProfileScreen' component={ViewProfileScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name='DeleteAccountScreen' component={DeleteAccountScreen} options={{ headerShown: false }}/>
         
         </>
         )}

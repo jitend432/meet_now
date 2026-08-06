@@ -175,7 +175,7 @@ const ChatRoom = () => {
                 <Text style={styles.userStatus}>{status}</Text>
               </View>
             </View>
-            <ChatActionButtons onCall={() => {}} onVideo={() => {}} onMenu={() => setMenuVisible(true)} />
+            {/* <ChatActionButtons onCall={() => {}} onVideo={() => {}} onMenu={() => setMenuVisible(true)} /> */}
           </View>
 
           <Modal visible={menuVisible} transparent animationType="fade" onRequestClose={() => setMenuVisible(false)}>

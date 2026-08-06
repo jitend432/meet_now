@@ -31,10 +31,15 @@ apiService.interceptors.request.use(
 
       // temp code start ==================================
 
+      // const isPublicRoute = config.url && (
+      //   config.url.includes('/userRegistration/') || 
+      //   config.url.includes('/auth/login')
+      // );
+
       const isPublicRoute = config.url && (
-        config.url.includes('/userRegistration/') || 
-        config.url.includes('/auth/login')
-      );
+       (config.url.includes('/userRegistration/') && !config.url.includes('/userRegistration/delete')) || 
+       config.url.includes('/auth/login')
+       );
 
       if (isPublicRoute) {
         return config;
@@ -66,7 +71,8 @@ apiService.interceptors.request.use(
 apiService.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const isPublicRoute = error.config?.url && error.config.url.includes('/userRegistration/');
+    const isPublicRoute = error.config?.url && error.config.url.includes('/userRegistration/') &&
+    !error.config.url.includes('/userRegistration/delete');
     if (error.response && error.response.status === 401 && !isPublicRoute) {
       store.dispatch(logout());
     }

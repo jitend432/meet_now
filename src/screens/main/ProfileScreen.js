@@ -7,7 +7,8 @@ import {
   Image, 
   TouchableOpacity,
   ActivityIndicator,
-  Alert
+  Alert,
+  Linking
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-free-solid/static";
@@ -18,10 +19,6 @@ import { setUserProfile } from '../../redux/slices/authSlice';
 
 
 import RohanAvatar from '../../assets/images/img.jpg';
-import Photo1 from '../../assets/images/img.jpg';
-import Photo2 from '../../assets/images/img.jpg';
-import Photo3 from '../../assets/images/img.jpg';
-import Photo4 from '../../assets/images/img.jpg';
 import { COLORS, FONTSIZE, SIZES } from '../../constants/theme';
 import { FONTS } from '../../constants/fonts';
 
@@ -116,46 +113,7 @@ const ProfileScreen = ({ navigation }) => {
             </View>
           </View>
 
-          {/* Premium Subscription Plan Banner Block */}
-          <View style={styles.subscriptionBanner}>
-            <View style={styles.bannerTopLine}>
-              <View style={styles.planTitleContainer}>
-                <FontAwesomeFreeSolid name="gem" size={30} color="#ffffff" style={styles.diamondIcon} />
-                <View>
-                  <Text style={styles.planNameText}>Basic Plan</Text>
-                  <Text style={styles.planPriceText}>$19.99 <Text style={styles.slashMonthText}>/ Month</Text></Text>
-                </View>
-              </View>
-              <View style={styles.activePillBadge}>
-                <Text style={styles.activePillText}>Active</Text>
-              </View>
-            </View>
-
-            <View style={styles.planMetaGrid}>
-              <View style={styles.metaGridItem}>
-                <FontAwesomeFreeSolid name="calendar-alt" size={25} color="#a5d6a7" />
-                <View style={styles.metaGridTextColumn}>
-                  <Text style={styles.metaLabel}>Valid till</Text>
-                  <Text style={styles.metaValue}>20 Jul 2026</Text>
-                </View>
-              </View>
-              <View style={styles.metaGridItem}>
-                <FontAwesomeFreeSolid name="sync-alt" size={15} color="#a5d6a7" />
-                <View style={styles.metaGridTextColumn}>
-                  <Text style={styles.metaLabel}>Auto Renew</Text>
-                  <Text style={styles.metaValue}>ON</Text>
-                </View>
-              </View>
-            </View>
-
-            <TouchableOpacity style={styles.managePlanButton} activeOpacity={0.8}
-            onPress={() => navigation.navigate('PremiumPlans')}
-            >
-              <Text style={styles.managePlanButtonText}>Manage Plan</Text>
-              <FontAwesomeFreeSolid name="chevron-right" size={12} color="#ffffff" />
-            </TouchableOpacity>
-
-          </View>
+         
 
           {/* Section Section Divider Heading label */}
           <Text style={styles.sectionDividerLabel}>Manage</Text>

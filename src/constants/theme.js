@@ -5,7 +5,8 @@ export const RV = (size) => RFValue(size);
 
 export const COLORS = {
   primary: '#114d23',
-  background: '#f9f3e6',
+  //background: '#f9f3e6',
+  background: '#ffffff',
   button: '#0e5a2f',
   white: '#ffffff',
   black: '#000000',

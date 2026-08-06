@@ -26,11 +26,18 @@ import userApi from '../../services/userApi';
 import { matchApi } from '../../services/matchApi';
 import { FONTS } from '../../constants/fonts';
 import { photoApi } from '../../services/photoApi';
+import { useAppSelector } from '../../redux/hooks';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.4;
 
 const DiscoverScreen = () => {
+
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Redux se distance, minAge, maxAge ki live values:
+  const { distance, minAge, maxAge } = useAppSelector((state) => state.auth.discoverySettings);
   
   const [profiles, setProfiles] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -74,7 +81,7 @@ const DiscoverScreen = () => {
 
   useEffect(() => {
     fetchNearbyProfiles();
-  }, []);
+  }, [distance, minAge, maxAge]);
 
   useEffect(() => {
     if (profiles.length > 0 && currentIndex < profiles.length && currentProfile.id) {
@@ -86,7 +93,12 @@ const DiscoverScreen = () => {
     try {
       setIsLoading(true);
       setHasError(false);
-      const response = await userApi.getNearbyUsers(10);
+      console.log("=== API PARAMS BEING SENT Dicover screen ===", {
+      distance,
+      minAge,
+      maxAge,
+    });
+      const response = await userApi.getNearbyUsers(distance, minAge, maxAge);
       console.log("Nearby User Data ====> ", response);
       
       const profilesArray = response?.data || [];
@@ -448,7 +460,7 @@ const DiscoverScreen = () => {
               <GestureDetector gesture={gesture}>
                 <Animated.View style={[styles.animatedCardContainer, cardAnimatedStyle]}>
 
-                 <ImageBackground 
+                 {/* <ImageBackground 
                   source={
                     currentProfile?.profilePhoto 
                       ? 
@@ -483,28 +495,91 @@ const DiscoverScreen = () => {
                         <Text style={styles.metaText}>{currentProfile.location || currentProfile.city}</Text>
                       </View>
                     </View>
-                  </ImageBackground>
+                  </ImageBackground> */}
+
+                  <ImageBackground 
+  source={
+    currentProfile?.profilePhoto 
+      ? { uri: currentProfile.profilePhoto }
+      : require('../../assets/images/img.jpg') 
+  } 
+  style={styles.backgroundImage}
+  imageStyle={styles.cardImageRadius}
+  resizeMode="cover"
+>
+  {/* INFO BUTTON */}
+  <TouchableOpacity 
+    style={styles.infoButton} 
+    onPress={() => setIsAboutVisible(true)}
+    activeOpacity={0.7}
+  >
+    <FontAwesomeFreeSolid name="info-circle" size={26} color="#ffffff" />
+  </TouchableOpacity>
+
+  
+
+  {/* IS CONTAINER SE DETAILS AUR BUTTONS PHOTO KE UPAR AAYENGE */}
+  <View style={styles.bottomCardContent}>
+
+    {/* Action Buttons */}
+    <View style={styles.actionButtonsRow}>
+      <TouchableOpacity onPress={() => forceSwipe('left')} style={[styles.circleButton, styles.dislikeButton]} activeOpacity={0.8}>
+        <FontAwesomeFreeSolid name="times" size={24} color="#f44336" />
+      </TouchableOpacity>
+      
+      <TouchableOpacity onPress={handleSuperLike} style={[styles.circleButton, styles.superLikeButton]} activeOpacity={0.8}>
+        <FontAwesomeFreeSolid name="star" size={22} color="#ffb300" />
+      </TouchableOpacity>
+      
+      <TouchableOpacity onPress={() => forceSwipe('right')} style={[styles.circleButton, styles.likeButton]} activeOpacity={0.8}>
+        <FontAwesomeFreeSolid name="heart" size={24} color="#e91e63" />
+      </TouchableOpacity>
+    </View>
+    
+    {/* Profile Details (Name Card) */}
+    <View style={styles.profileDetailsOverlay}>
+      <View style={styles.nameContainer}>
+        <Text style={styles.profileName}>{currentProfile.name}</Text>
+        <Text style={styles.profileAge}>{currentProfile.age}</Text>
+        <FontAwesomeFreeSolid name="star" size={16} color="#ffb300" style={styles.starIcon} />
+      </View>
+      <View style={styles.metaRow}>
+        <FontAwesomeFreeSolid name="briefcase" size={13} color="#e0e0e0" style={styles.metaIcon} />
+        <Text style={styles.metaText}>{currentProfile.role || currentProfile.profession}</Text>
+      </View>
+      <View style={styles.metaRow}>
+        <FontAwesomeFreeSolid name="map-marker-alt" size={13} color="#e0e0e0" style={styles.metaIcon} />
+        <Text style={styles.metaText}>{currentProfile.location || currentProfile.city}</Text>
+      </View>
+    </View>
+
+    
+
+  </View>
+</ImageBackground>
+
+
                 </Animated.View>
               </GestureDetector>
             </View>
 
             {/* ACTION BUTTONS ROW */}
-            <View style={styles.actionButtonsRow}>
-              {/* DISLIKE BUTTON */}
+            {/* <View style={styles.actionButtonsRow}>
+              
               <TouchableOpacity onPress={() => forceSwipe('left')} style={[styles.circleButton, styles.dislikeButton]} activeOpacity={0.8}>
                 <FontAwesomeFreeSolid name="times" size={24} color="#f44336" />
               </TouchableOpacity>
               
-              {/* SUPER LIKE BUTTON */}
+              
               <TouchableOpacity onPress={handleSuperLike} style={[styles.circleButton, styles.superLikeButton]} activeOpacity={0.8}>
                 <FontAwesomeFreeSolid name="star" size={22} color="#ffb300" />
               </TouchableOpacity>
               
-              {/* LIKE BUTTON */}
+              
               <TouchableOpacity onPress={() => forceSwipe('right')} style={[styles.circleButton, styles.likeButton]} activeOpacity={0.8}>
                 <FontAwesomeFreeSolid name="heart" size={24} color="#e91e63" />
               </TouchableOpacity>
-            </View>
+            </View> */}
 
             <Text style={styles.paginationText}>{currentIndex + 1} / {profiles.length} profile</Text>
 
@@ -606,11 +681,13 @@ const styles = StyleSheet.create({
   },
   mainLayoutContainer: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 21,
+    paddingHorizontal: 12,
+    paddingTop: 8,
     alignItems: 'center',
     justifyContent: 'space-between',
     position: 'relative',
+    paddingBottom: 24,
+    position: 'relative'
   },
   floatingFeedbackContainer: {
     position: 'absolute',
@@ -642,9 +719,10 @@ const styles = StyleSheet.create({
   },
   cardWrapper: {
     width: '100%',
-    height: '68%',
+    //height: '68%',
     position: 'relative',
     borderRadius: 24,
+    flex:1
   },
   animatedCardContainer: {
     position: 'absolute',
@@ -670,6 +748,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.45)', 
     borderRadius: 16,
     padding: 16,
+    marginBottom: 4,
+    marginTop: 0,
   },
   nameContainer: {
     flexDirection: 'row',
@@ -708,18 +788,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 16,
+    //marginTop: 16,
     width: '100%',
+    marginBottom: 20,
   },
   circleButton: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#ffffff',
+    //backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginHorizontal: 14,
-  },
+    marginHorizontal: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    borderWidth: 1.5,
+    },
   dislikeButton: {
     borderWidth: 1.5,
     borderColor: '#f44336',
@@ -833,5 +921,10 @@ const styles = StyleSheet.create({
   justifyContent: 'center',
   alignItems: 'center',
   zIndex: 10,
+},
+
+bottomCardContent: {
+  width: '100%',
+  alignItems: 'center',
 },
 });
