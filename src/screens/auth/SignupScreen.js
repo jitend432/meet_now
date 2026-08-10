@@ -20,6 +20,7 @@ import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-fre
 import { useAppDispatch } from '../../redux/hooks';
 import { FONTS } from '../../constants/fonts';
 import { authApi } from '../../services/authApi';
+import { CustomModal } from '../../components/common/CustomModal';
 
 const SignupScreen = ({ navigation }) => {
   
@@ -30,73 +31,34 @@ const SignupScreen = ({ navigation }) => {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: '',
+    message: '',
+    type: 'info',
+    buttons: []
+  });
+
+  const showAlertModal = (title, message, type = 'info', buttons = []) => {
+    setModalConfig({ title, message, type, buttons });
+    setModalVisible(true);
+  };
 
 
-// const handleRegister = async () => {
-//   if (!fullName.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
-//     Alert.alert('Validation Error', 'All fields are required.');
-//     return;
-//   }
-
-//   if (password !== confirmPassword) {
-//     Alert.alert('Validation Error', 'Password and Confirm Password do not match.');
-//     return;
-//   }
-
-//   if (!agreeTerms) {
-//     Alert.alert('Terms Error', 'Please agree to the Terms and Conditions to proceed.');
-//     return;
-//   }
-
-//   setLoading(true);
-
-//   try {
-//     const resData = await authApi.register(fullName.trim(), email.trim(), password);
-    
-//     console.log('Register API Response:', resData);
-
-//     if (resData && resData.data && resData.data.token) {
-//       Alert.alert('Success', 'Account created successfully!', [
-//         {
-//           text: 'OK',
-//           onPress: () => {
-//             dispatch(setCredentials({
-//               token: resData.data.token,
-//               refreshToken: null,
-//             }));
-//           }
-//         }
-//       ]);
-//     } else {
-//       Alert.alert('Success', 'Registration successful! Please log in.', [
-//         { text: 'Go to Login', onPress: () => navigation.navigate('LoginScreen') }
-//       ]);
-//     }
-
-//   } catch (error) {
-//     console.error('Register Handler Catch Error:', error);
-//     const errorMessage = error.response?.data?.msg || error.message || 'Registration failed. Please try again.';
-//     console.log("=== BACKEND ERROR DETAILS ===", error.response?.data);
-//     Alert.alert('Registration Failed', errorMessage);
-//   } finally {
-//     setLoading(false);
-//   }
-// };
 
 const handleRegister = async () => {
   if ( !email.trim() || !password.trim() || !confirmPassword.trim()) {
-    Alert.alert('Validation Error', 'All fields are required.');
-    return;
+    showAlertModal('Validation Error', 'All fields are required.', 'warning');
+      return;
   }
 
   if (password !== confirmPassword) {
-    Alert.alert('Validation Error', 'Password and Confirm Password do not match.');
+    showAlertModal('Validation Error', 'Password and Confirm Password do not match.', 'warning');
     return;
   }
 
   if (!agreeTerms) {
-    Alert.alert('Terms Error', 'Please agree to the Terms and Conditions to proceed.');
-    return;
+    showAlertModal('Terms Error', 'Please agree to the Terms and Conditions to proceed.', 'warning');    return;
   }
 
   setLoading(true);
@@ -138,29 +100,46 @@ const handleRegister = async () => {
     console.log('Register API Response:', resData);
 
     if (resData && resData.data && resData.data.token) {
-      Alert.alert('Success', 'Account created successfully!', [
-        {
-          text: 'OK',
-          onPress: () => {
-            dispatch(setCredentials({
-              token: resData.data.token,
-              refreshToken: null,
-            }));
-          }
-        }
-      ]);
+      showAlertModal(
+          'Success', 
+          'Account created successfully!', 
+          'success',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                setModalVisible(false);
+                dispatch(setCredentials({
+                  token: resData.data.token,
+                  refreshToken: null,
+                }));
+              }
+            }
+          ]
+        );
     } else {
-      Alert.alert('Success', 'Registration successful! Please log in.', [
-        { text: 'Go to Verify Otp', onPress: () => navigation.navigate('VerifyOtpScreen',{ email: payload.email }) }
-      ]);
-    }
+     showAlertModal(
+          'Success', 
+          'Registration successful! Please log in.', 
+          'success',
+          [
+            { 
+              text: 'Go to Verify Otp', 
+              onPress: () => {
+                setModalVisible(false);
+                navigation.navigate('VerifyOtpScreen', { email: payload.email });
+              }
+            }
+          ]
+        );
+      }
 
   } catch (error) {
     console.error('Register Handler Catch Error:', error);
     const errorMessage = error.response?.data?.message || error.message || 'Registration failed. Please try again.';
     console.log("=== BACKEND ERROR DETAILS ===", error.response?.data);
-    Alert.alert('Registration Failed', errorMessage);
-  } finally {
+    showAlertModal('Registration Failed', errorMessage, 'error');
+ } finally {
     setLoading(false);
   }
 };
@@ -313,6 +292,14 @@ const handleRegister = async () => {
         </View> */}
 
       </ScrollView>
+      <CustomModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        type={modalConfig.type}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        buttons={modalConfig.buttons}
+      />
     </SafeAreaView>
   );
 };

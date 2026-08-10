@@ -8,8 +8,9 @@ const initialState = {
   profileId: null,
   isLoggedIn: false,
   user: null,
+  isProfileCompleted: false,
   
-  // 1. Centralized Buffer Draft for simultaneous multi-screen profile submission
+ 
   profileDraft: {
     fullName: null,
     age: null,
@@ -48,17 +49,23 @@ const authSlice = createSlice({
           console.log("Decoded JWT Payload:", decoded);
           state.userId = decoded.registrationId || null; 
           state.profileId = decoded.profileId || null;
+          state.isProfileCompleted = Boolean(decoded.profileId);
         } catch (error) {
           console.error('AuthSlice: Token decoding failed:', error);
           state.userId = null;
+          state.profileId = null;
+          state.isProfileCompleted = false;
         }
       }
+    },
+
+    setProfileCompleted: (state, action) => {
+      state.isProfileCompleted = action.payload;
     },
     
     setUserProfile: (state, action) => {
       state.user = action.payload;
       
-      // Fallback: Agar token se ID skip hui ho toh user profile object ke nodes se map ho jaye
       if (action.payload) {
         if (!state.userId) {
           state.userId = action.payload.registrationId || action.payload.id || action.payload._id;
@@ -66,10 +73,12 @@ const authSlice = createSlice({
         if (!state.profileId) {
           state.profileId = action.payload.profileId || action.payload.id;
         }
+        if (action.payload.profileId || action.payload.isProfileCompleted) {
+          state.isProfileCompleted = true;
+        }
       }
     },
 
-    // 2. Reducer to merge step-by-step form changes on each screen transition
     updateProfileDraft: (state, action) => {
       state.profileDraft = {
         ...state.profileDraft,
@@ -77,7 +86,6 @@ const authSlice = createSlice({
       };
     },
 
-    // 3. Reducer to scrub draft states out of storage upon complete transaction hit
     clearProfileDraft: (state) => {
       state.profileDraft = initialState.profileDraft;
     },
@@ -95,6 +103,7 @@ const authSlice = createSlice({
       state.userId = null;
       state.profileId = null;
       state.isLoggedIn = false;
+      state.isProfileCompleted = false;
       state.user = null;
       state.discoverySettings = initialState.discoverySettings;
       state.profileDraft = initialState.profileDraft;
@@ -105,6 +114,7 @@ const authSlice = createSlice({
 
 export const { 
   setCredentials, 
+  setProfileCompleted,
   logout, 
   setUserProfile, 
   updateDiscoverySettings,

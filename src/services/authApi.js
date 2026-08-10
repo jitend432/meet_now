@@ -16,10 +16,27 @@ export const authApi = {
   },
 
 
-  updateProfile: async (id, profileData) => {
-    const response = await apiService.put(`/users/update/${id}`, profileData);
-    return response.data;
-  },
+  // updateProfile: async (id, profileData) => {
+  //   const response = await apiService.put(`/users/update/${id}`, profileData);
+  //   return response.data;
+  // },
+
+//   updateProfile: async (registrationId, profileData) => {
+//   const response = await apiService.put(`/users/update/${registrationId}`, profileData);
+//   return response.data;
+// },
+
+updateProfile: async (registrationId, profileData) => {
+  const cleanId = Number(registrationId);
+
+  // Path Variable ke sath Query Param (?registrationId=28) attach kar diya hai
+  const response = await apiService.put(
+    `/users/update/${cleanId}?registrationId=${cleanId}`, 
+    profileData
+  );
+
+  return response.data;
+},
 
   getMyProfile: async (registrationId) => {
     const response = await apiService.get(`/users/${registrationId}`);

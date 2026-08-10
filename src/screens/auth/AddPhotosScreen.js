@@ -14,91 +14,208 @@ import { COLORS, FONTSIZE, SIZES } from '../../constants/theme';
 import Button from '../../components/common/Button';
 import LogoImage from '../../assets/images/vynk_t.png';
 import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-free-solid/static";
-
-// Image Picker & API Imports
 import { launchImageLibrary } from 'react-native-image-picker';
 import { photoApi } from '../../services/photoApi';
 import { useAppSelector } from '../../redux/hooks';
 import { FONTS } from '../../constants/fonts';
+import { CustomModal } from '../../components/common/CustomModal';
 
 const AddPhotosScreen = ({ navigation }) => {
-  const [loading, setLoading] = useState(false);
-  
-  // State to hold only one single image file object
-  const [photo, setPhoto] = useState(null);
 
-  // Redux connected logged-in user's ID
+  const [loading, setLoading] = useState(false);
+  const [photo, setPhoto] = useState(null);
   const userId = useAppSelector((state) => state.auth.userId);
+  console.log("reg Id",userId)
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: '',
+    message: '',
+    type: 'info',
+    buttons: []
+  });
+
+  const showAlertModal = (title, message, type = 'info', buttons = []) => {
+    setModalConfig({ title, message, type, buttons });
+    setModalVisible(true);
+  };
 
   const handleUploadPress = () => {
     const options = {
       mediaType: 'photo',
-      quality: 0.8, // Postman tested high quality metadata processing
+      quality: 0.8,
     };
 
-    launchImageLibrary(options, (response) => {
-      if (response.didCancel) {
-        console.log('User cancelled image picker');
-      } else if (response.errorMessage) {
-        console.log('ImagePicker Error: ', response.errorMessage);
-        Alert.alert('Error', 'Failed to pick an image. Please try again.');
-      } else if (response.assets && response.assets.length > 0) {
-        const pickedFile = response.assets[0];
+  //   launchImageLibrary(options, (response) => {
+  //     if (response.didCancel) {
+  //       console.log('User cancelled image picker');
+  //     } else if (response.errorMessage) {
+  //       console.log('ImagePicker Error: ', response.errorMessage);
+  //       showAlertModal('Error', 'Failed to pick an image. Please try again.', 'error');
+  //     } else if (response.assets && response.assets.length > 0) {
+  //       const pickedFile = response.assets[0];
         
-        // Form-data compliant target dynamic dictionary mapping
-        const fileData = {
-          uri: pickedFile.uri,
-          type: pickedFile.type || 'image/jpeg',
-          name: pickedFile.fileName || `photo_${Date.now()}.jpg`
-        };
+  //       const fileData = {
+  //         uri: pickedFile.uri,
+  //         type: pickedFile.type || 'image/jpeg',
+  //         name: pickedFile.fileName || `photo_${Date.now()}.jpg`,
+  //         size: pickedFile.fileSize || null,
+  //       };
 
-        setPhoto(fileData);
-      }
-    });
-  };
+  //       setPhoto(fileData);
+  //     }
+  //   });
+  // };
 
-  const handleContinue = async () => {
-    // Validation check: Mandate single main profile photo
-    if (!photo) {
-      Alert.alert('Photo Required', 'Please upload a photo to continue.');
-      return;
+   launchImageLibrary(options, (response) => {
+    if (response.didCancel) {
+      console.log('User cancelled image picker');
+    } else if (response.errorMessage) {
+      console.log('ImagePicker Error: ', response.errorMessage);
+      showAlertModal('Error', 'Failed to pick an image. Please try again.', 'error');
+    } else if (response.assets && response.assets.length > 0) {
+      const pickedFile = response.assets[0];
+      
+      // Dynamic Extension Extractor
+      const fileUri = pickedFile.uri;
+      const uriType = pickedFile.type || 'image/jpeg';
+      
+      // Extension Detect Karein (e.g., png, jpg, webp)
+      const detectedExt = uriType.split('/')[1] || 'jpeg';
+      
+      // Dynamic Filename
+      const fileName = pickedFile.fileName 
+        ? pickedFile.fileName 
+        : `photo_${Date.now()}.${detectedExt}`;
+
+      const fileData = {
+        uri: fileUri,
+        type: uriType,
+        name: fileName,
+        size: pickedFile.fileSize || null,
+      };
+
+      console.log('Processed Photo Payload:', fileData);
+      setPhoto(fileData);
     }
+  });
+};
 
-    try {
-      setLoading(true);
-      console.log('Triggering direct Postman-matching multipart payload for user:', userId);
 
-      // Triggering your single photo upload service layer structure
-      const result = await photoApi.uploadSinglePhoto(userId, photo);
-      console.log('API Single Upload Success Response ====>', result);
+     const formatFileSize = (bytes) => {
+       if (!bytes) return '';
+       if (bytes < 1024 * 1024) {
+         return `${(bytes / 1024).toFixed(2)} KB`;
+       }
+       return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+     };
 
-      if (result && result.status) {
-        Alert.alert('Success', 'Profile photo uploaded successfully!', [
+//   const handleContinue = async () => {
+//     if (!photo) {
+//     showAlertModal('Photo Required', 'Please upload a photo to continue.', 'warning');
+//       return;
+//     }
+
+// try {
+//   setLoading(true);
+//   console.log('Triggering direct Postman-matching multipart payload for user:', userId);
+
+//   const result = await photoApi.uploadSinglePhoto(userId, photo);
+//   console.log('API Single Upload Success Response ====>', result);
+
+//   // Exact boolean check karein (result.status === true ya result.success === true)
+//   if (result && (result.status === true || result.status === 200)) {
+    
+//     // Extra safety: Check karein ki response me uploaded photo ka URL aaya hai ya nahi
+//     if (result.data || result.photoUrl || result.user) {
+//       showAlertModal(
+//         'Success', 
+//         'Profile photo uploaded successfully!', 
+//         'success',
+//         [
+//           {
+//             text: 'OK',
+//             onPress: () => {
+//               setModalVisible(false);
+//               navigation.navigate('BasicInfoScreen');
+//             }
+//           }
+//         ]
+//       );
+//     } else {
+//       // API 200/true bhej rahi hai par photo upload nahi hui
+//       showAlertModal('Upload Failed', 'Photo upload nahi ho saki. Please try again.', 'error');
+//     }
+
+//   } else {
+//     // Backend ne error response bheja (e.g., status: false)
+//     showAlertModal('Upload Failed', result?.message || 'Something went wrong!', 'error');
+//   }
+
+// } catch (error) {
+//   console.log('Upload Catch Error ====>', error);
+//   showAlertModal('Error', 'Network error or upload failed', 'error');
+// } finally {
+//   setLoading(false);
+// }
+
+
+//   };
+
+
+    const handleContinue = async () => {
+  if (!photo) {
+    showAlertModal('Photo Required', 'Please upload a photo to continue.', 'warning');
+    return;
+  }
+
+  try {
+    setLoading(true);
+    console.log('Uploading photo for user:', userId);
+    console.log('Photo Payload:', photo);
+
+    const result = await photoApi.uploadSinglePhoto(userId, photo);
+    console.log('API Single Upload Response ====>', result);
+
+    // Dynamic Check: Status boolean true, number 200, ya string "success" ho
+    const isSuccess = 
+      result?.status === true || 
+      result?.status === 200 || 
+      result?.success === true ||
+      result?.status === 'success';
+
+    if (isSuccess) {
+      showAlertModal(
+        'Success', 
+        'Profile photo uploaded successfully!', 
+        'success',
+        [
           {
             text: 'OK',
-            onPress: () => navigation.navigate('BasicInfoScreen')
+            onPress: () => {
+              setModalVisible(false);
+              navigation.navigate('EditProfileScreen');
+            }
           }
-        ]);
-      } else {
-        // Fallback for edge cases if status returns false
-        Alert.alert('Upload Status', result?.msg || 'Could not verify upload status.');
-      }
-
-    } catch (error) {
-      console.error('Failed to upload user photo via API:', error);
-      
-      if (error.response) {
-        console.log('Active Server Error Debug Log:', error.response.data);
-      }
-      
-      Alert.alert(
-        'Upload Failed', 
-        'Something went wrong while uploading your profile photo. Please try again.'
+        ]
       );
-    } finally {
-      setLoading(false);
+    } else {
+      // Backend message print karein
+      showAlertModal('Upload Failed', result?.message || result?.msg || 'Upload failed from server.', 'error');
     }
-  };
+
+  } catch (error) {
+    console.log('Upload Catch Error ====>', error?.response?.data || error?.message || error);
+    showAlertModal(
+      'Upload Failed', 
+      error?.response?.data?.message || 'Network error or upload failed. Please try again.', 
+      'error'
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -109,23 +226,23 @@ const AddPhotosScreen = ({ navigation }) => {
         <View style={styles.cardWrapper}>
 
           {/* Step Header Area */}
-          <View style={styles.headerContainer}>
+          {/* <View style={styles.headerContainer}>
             <View style={styles.logoRow}>
               <Image source={LogoImage} style={styles.logoStyle} resizeMode="contain" />
               <Text style={styles.brandName}>Complete Your Profile</Text>
             </View>
-          </View>
+          </View> */}
 
           {/* Progress Bar */}
-          <View style={styles.progressWrapper}>
+          {/* <View style={styles.progressWrapper}>
             <View style={styles.progressTextRow}>
-              <Text style={styles.progressStepLabel}>Step 2 of 5</Text>
+              <Text style={styles.progressStepLabel}>Step 2 of 8</Text>
               <Text style={styles.progressPercentageMetric}>25%</Text>
             </View>
             <View style={styles.progressTrackBackground}>
               <View style={[styles.progressTrackFill, { width: '25%' }]} />
             </View>
-          </View>
+          </View> */}
 
           {/* Headings */}
           <Text style={styles.mainStepTitle}>Add Your Photo</Text>
@@ -147,6 +264,20 @@ const AddPhotosScreen = ({ navigation }) => {
                 </View>
               )}
             </TouchableOpacity>
+
+            {/* Image Slot ke theek niche paste karein */}
+           {photo && (
+             <View style={{ marginTop: 10, alignItems: 'center' }}>
+               <Text style={{ fontSize: 14, color: '#333', fontWeight: '500' }} numberOfLines={1}>
+                 📄 {photo.name}
+               </Text>
+               {photo.size && (
+                 <Text style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
+                   💾 {formatFileSize(photo.size)}
+                 </Text>
+               )}
+             </View>
+           )}
           </View>
 
           <Text style={styles.helperTipText}>
@@ -157,7 +288,7 @@ const AddPhotosScreen = ({ navigation }) => {
           <View style={styles.navigationControlRow}>
             <TouchableOpacity 
               activeOpacity={0.7} 
-              onPress={() => navigation.goBack()}
+              onPress={() => navigation.navigate('EditProfileScreen')}
               style={styles.backButtonTouchTarget}
             >
               <Text style={styles.backButtonText}>Back</Text>
@@ -173,6 +304,14 @@ const AddPhotosScreen = ({ navigation }) => {
 
         </View>
       </ScrollView>
+      <CustomModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        type={modalConfig.type}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        buttons={modalConfig.buttons}
+      />
     </SafeAreaView>
   );
 };
@@ -192,13 +331,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cardWrapper: {
-    backgroundColor: COLORS.background, // Card color matches your current layout tint
+    backgroundColor: COLORS.background, 
     borderRadius: 16,
     paddingHorizontal: 20,
     paddingVertical: 24,
     minHeight: '88%',
     
-    // Drop shadow values to clearly separate the card surface layer from white canvas background
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
@@ -257,7 +395,8 @@ const styles = StyleSheet.create({
     //fontWeight: '800',
     color: COLORS.primary,
     marginBottom: 4,
-    fontFamily: FONTS.MEDIUM
+    fontFamily: FONTS.MEDIUM,
+    alignItems: 'center'
   },
   subStepTitle: {
     fontSize: 15,

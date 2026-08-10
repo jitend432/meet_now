@@ -4,7 +4,8 @@ import {
   onMessage, 
   onTokenRefresh, 
   onNotificationOpenedApp, 
-  getInitialNotification 
+  getInitialNotification,
+  setBackgroundMessageHandler
 } from '@react-native-firebase/messaging';
 import { Platform } from 'react-native';
 import notifee, { AndroidImportance } from '@notifee/react-native';
@@ -12,6 +13,11 @@ import { notificationPermission } from './notificationPermission';
 import userApi from '../services/userApi';
 
 const messagingInstance = getMessaging();
+
+// 1. Background message handler (Must be registered early)
+setBackgroundMessageHandler(messagingInstance, async (remoteMessage) => {
+  console.log('Background message received in background handler:', remoteMessage);
+});
 
 export const getFCMToken = async (userId) => {
   try {
@@ -49,22 +55,29 @@ export const getFCMToken = async (userId) => {
 export const initNotificationListeners = async (userId) => {
   if (!userId) return () => {};
 
-  
+  // Create Channel ONCE before listening
+  const channelId = await notifee.createChannel({
+    id: 'default',
+    name: 'Default Channel',
+    importance: AndroidImportance.HIGH,
+    sound: 'default',
+  });
+
+  // 2. Foreground Message Listener
   const unsubscribeForeground = onMessage(messagingInstance, async (remoteMessage) => {
     console.log('Foreground message received:', remoteMessage);
 
-    const channelId = await notifee.createChannel({
-      id: 'default',
-      name: 'Default Channel',
-      importance: AndroidImportance.HIGH,
-    });
+    // Fallback: Agar notification object empty ho, to data object se title/body uthao
+    const title = remoteMessage.notification?.title || remoteMessage.data?.title || 'Vynk Dating';
+    const body = remoteMessage.notification?.body || remoteMessage.data?.body || remoteMessage.data?.message || '';
 
     await notifee.displayNotification({
-      title: remoteMessage.notification?.title || 'Vynk Dating',
-      body: remoteMessage.notification?.body || '',
+      title,
+      body,
       android: {
         channelId,
         importance: AndroidImportance.HIGH,
+        smallIcon: 'ic_launcher', // CRITICAL: Small icon fix for Android
         pressAction: {
           id: 'default',
         },
@@ -72,6 +85,7 @@ export const initNotificationListeners = async (userId) => {
     });
   });
 
+  // 3. Token Refresh Listener
   const unsubscribeTokenRefresh = onTokenRefresh(messagingInstance, async (newToken) => {
     console.log("FCM Token refreshed:", newToken);
     try {
@@ -85,14 +99,18 @@ export const initNotificationListeners = async (userId) => {
     }
   });
 
+  // 4. Background Click Listener
   onNotificationOpenedApp(messagingInstance, (remoteMessage) => {
-    console.log('Clicked from background:', remoteMessage);
+    console.log('Clicked from background state:', remoteMessage);
+    // Navigation logic here if needed
   });
 
+  // 5. Quit State Click Listener
   getInitialNotification(messagingInstance)
     .then((remoteMessage) => {
       if (remoteMessage) {
         console.log('Clicked from quit state:', remoteMessage);
+        // Navigation logic here if needed
       }
     })
     .catch((err) => console.error("Error reading initial notification:", err));

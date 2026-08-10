@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
-  ActivityIndicator
+  ActivityIndicator,
+  StatusBar
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-free-solid/static";
@@ -17,10 +18,15 @@ import CustomSlider from '../../components/common/CustomSlider';
 import { logout } from '../../redux/slices/authSlice';
 import { FONTS } from '../../constants/fonts';
 import { FONTSIZE } from '../../constants/theme';
+import { COLORS } from '../../constants/theme';
 import Button from '../../components/common/Button';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { authApi } from '../../services/authApi';
 import { updateDiscoverySettings } from '../../redux/slices/authSlice';
+
+
+import { TestNotificationButton } from '../../components/common/TestNotificationButton';
+import notifee, { AndroidImportance } from '@notifee/react-native';
 
 const SettingsScreen = ({navigation}) => {
 
@@ -93,13 +99,14 @@ const confirmLogout = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+       <StatusBar backgroundColor={COLORS.background} barStyle="dark-content" />
       {/* Logout Confirmation Modal */}
-<Modal
-  animationType="fade"
-  transparent={true}
-  visible={logoutModalVisible}
-  onRequestClose={() => setLogoutModalVisible(false)}
->
+     <Modal
+       animationType="fade"
+       transparent={true}
+       visible={logoutModalVisible}
+       onRequestClose={() => setLogoutModalVisible(false)}
+     >
   <View style={styles.modalOverlay}>
     <View style={styles.modalContent}>
       
@@ -182,7 +189,7 @@ const confirmLogout = () => {
     </View>
   </View>
 </Modal>
-      <CardContainer title="Vynk Dating">
+      {/* <CardContainer title="Vynk Dating"> */}
         <ScrollView 
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
@@ -317,7 +324,7 @@ const confirmLogout = () => {
 
 
         </ScrollView>
-      </CardContainer>
+      {/* </CardContainer> */}
     </SafeAreaView>
   );
 };
@@ -331,6 +338,8 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    backgroundColor: COLORS.background
+
   },
   scrollContent: {
     paddingHorizontal: 16,

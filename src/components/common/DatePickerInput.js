@@ -58,6 +58,7 @@ const DatePickerInput = ({
 
       <DatePicker
         modal
+        theme="light"
         mode={mode}
         open={open}
         date={isNaN(initialDate.getTime()) ? new Date(2000, 0, 1) : initialDate}

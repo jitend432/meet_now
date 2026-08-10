@@ -119,13 +119,16 @@ const handleContinue = () => {
 
           {/* Linear Progress Metric Indicator */}
           <View style={styles.progressWrapper}>
+
             <View style={styles.progressTextRow}>
-              <Text style={styles.progressStepLabel}>Step 3 of 5</Text>
+              <Text style={styles.progressStepLabel}>Step 3 of 8</Text>
               <Text style={styles.progressPercentageMetric}>35%</Text>
             </View>
+            
             <View style={styles.progressTrackBackground}>
               <View style={[styles.progressTrackFill, { width: '35%' }]} />
             </View>
+
           </View>
 
           {/* Step Typography Callouts */}

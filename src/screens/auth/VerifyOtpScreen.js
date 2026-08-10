@@ -18,7 +18,7 @@ import { setCredentials } from '../../redux/slices/authSlice';
 
 const VerifyOtpScreen = ({ navigation, route }) => {
 
-  const email = route?.params?.email || 'yugank@gmail.com';
+  const email = route?.params?.email || 'User@gmail.com';
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);

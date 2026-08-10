@@ -12,10 +12,10 @@ import { ChipButton } from '../../components/common/ChipButton';
 import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-free-solid/static";
 
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
-import { authApi } from '../../services/authApi';
-import { setUserProfile } from '../../redux/slices/authSlice';
 import { updateProfileDraft } from '../../redux/slices/authSlice';
 import { COLORS } from '../../constants/theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { wp } from '../../utils/Scaling';
 
 export default function LifestyleScreen({navigation}) {
 
@@ -126,7 +126,7 @@ export default function LifestyleScreen({navigation}) {
         {/* Progress Bar Area */}
         <View style={styles.progressContainer}>
           <View style={styles.progressTextRow}>
-            <Text style={styles.progressSub}>Step 4 of 5</Text>
+            <Text style={styles.progressSub}>Step 4 of 8</Text>
             <Text style={styles.progressPercent}>75%</Text>
           </View>
           <View style={styles.progressBarBackground}>
@@ -222,13 +222,13 @@ const styles = StyleSheet.create({
   cardContainer: {
     backgroundColor: COLORS.background, 
     borderRadius: 15,
-    padding: 20,
+    padding: wp(5),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 2,
-    height: '80%'
+   // height: '80%'
   },
   headerRow: {
     flexDirection: 'row',
@@ -295,14 +295,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap', 
     gap: 10,          
-    marginBottom: 28,
+    marginBottom: wp(5),
   },
   customChip: {
     backgroundColor: '#ffffff',
     borderColor: '#1b4d22',
     borderRadius: 10,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingVertical: wp(2),
+    paddingHorizontal: wp(3.5),
   },
   selectedChipBackground: {
     backgroundColor: '#e2f0d9', 

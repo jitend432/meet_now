@@ -28,91 +28,93 @@ import ResetPasswordScreen from '../screens/auth/ResetPasswordScreen';
 import ChatRoomScreen from '../screens/main/ChatRoomScreen';
 import ViewProfileScreen from '../screens/main/ViewProfileScreen';
 import DeleteAccountScreen from '../screens/main/DeleteAccountScreen';
+import EditProfileScreen from '../screens/main/EditProfileScreen';
+import ProfileScreen from '../screens/main/ProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
 
   const isLoggedIn = useAppSelector((state) => state.auth.isLoggedIn)
-  const userId = useAppSelector((state) => state.auth.userId);
+  const isProfileCompleted = useAppSelector((state) => state.auth.isProfileCompleted);
 
-  useEffect(() => {
+  const userId = useAppSelector((state) => state.auth.profileId);
+  // useEffect(() => {
+  //   if (isLoggedIn && userId) {
+  //     getFCMToken(userId);
+  //     let cleanUpListeners;
+  //     initNotificationListeners(userId).then((unsub) => {
+  //       cleanUpListeners = unsub;
+  //     });
+  //     return () => {
+  //       if (cleanUpListeners) cleanUpListeners();
+  //     };
+  //   }
+  // }, [isLoggedIn, userId]);
 
+useEffect(() => {
+  let unsub;
+  const setupNotifications = async () => {
     if (isLoggedIn && userId) {
-      getFCMToken(userId);
-
-      let cleanUpListeners;
-      initNotificationListeners(userId).then((unsub) => {
-        cleanUpListeners = unsub;
-      });
-
-      return () => {
-        if (cleanUpListeners) cleanUpListeners();
-      };
+      await getFCMToken(userId);
+      unsub = await initNotificationListeners(userId);
     }
-  }, [isLoggedIn, userId]);
-
-//   useEffect(() => {
-//   if (!isLoggedIn || !userId) return;
-
-//   getFCMToken(userId);
-
-//   let unsubscribe;
-
-//   const setup = async () => {
-//     unsubscribe = await initNotificationListeners(userId);
-//   };
-
-//   setup();
-
-//   return () => {
-//     if (unsubscribe) {
-//       unsubscribe();
-//     }
-//   };
-// }, [isLoggedIn, userId]);
+  };
+  setupNotifications();
+  return () => {
+    if (unsub) unsub();
+  };
+}, [isLoggedIn, userId]);
 
   return (
     <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen name='SplashScreen' component={SplashScreen} options={{ headerShown: false }}/> 
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+
+         <Stack.Screen name='SplashScreen' component={SplashScreen} options={{ headerShown: false }}/> 
 
         {!isLoggedIn ? (
-          <>
+        <>
         <Stack.Screen name='GetStartedScreen' component={GetStartedScreen} options={{ headerShown: false }}/>
-        <Stack.Screen name='OnboardingScreen' component={OnboardingScreen} options={{ headerShown: false }}/>              
+        <Stack.Screen name='OnboardingScreen' component={OnboardingScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name='LoginScreen' component={LoginScreen} options={{ headerShown: false }}/>         
         <Stack.Screen name='SignupScreen' component={SignupScreen} options={{ headerShown: false }}/>
-        <Stack.Screen name='VerifyEmailScreen' component={VerifyEmailScreen} options={{ headerShown: false }}/>
         <Stack.Screen name='VerifyOtpScreen' component={VerifyOtpScreen} options={{ headerShown: false }}/>
-        <Stack.Screen name='EmailSuccessScreen' component={EmailSuccessScreen} options={{ headerShown: false }}/>
-        <Stack.Screen name='LoginScreen' component={LoginScreen} options={{ headerShown: false }}/> 
-        <Stack.Screen name='ResetPasswordScreen' component={ResetPasswordScreen} options={{ headerShown: false }}/>       
+        <Stack.Screen name='ResetPasswordScreen' component={ResetPasswordScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name='VerifyEmailScreen' component={VerifyEmailScreen} options={{ headerShown: false }}/>
+
+      
         
+       
         </>
-        ):(
+        ) :!isProfileCompleted ? (
           <>
+           <Stack.Screen name='EmailSuccessScreen' component={EmailSuccessScreen} options={{ headerShown: false }}/>
+           <Stack.Screen name='BasicInfoScreen' component={BasicInfoScreen} options={{ headerShown: false}}/>
+           <Stack.Screen name='ProfessionalDetailsScreen' component={ProfessionalDetailsScreen} options={{ headerShown: false}}/>
+           <Stack.Screen name='YourInterestScreen' component={YourInterestScreen} options={{ headerShown: false}}/>
+           <Stack.Screen name='LifeStyleScreen' component={LifestyleScreen} options={{ headerShown: false}}/>
+           <Stack.Screen name='InterestedInScreen' component={InterestedInScreen} options={{ headerShown: false}}/>
+           <Stack.Screen name='LookingForScreen' component={LookingForScreen} options={{ headerShown: false}}/>
+           <Stack.Screen name='ProfileCompletedScreen' component={ProfileCompletedScreen} options={{ headerShown: false}}/>       
+         </>
+        ):(
+         <>
         {/* <Stack.Screen name='CompleteprofileScreen' component={CompleteProfileScreen} options={{ headerShown: false }}/> */}
+        <Stack.Screen name='TabNavigator' component={TabNavigator} options={{ headerShown: false }}/>
         <Stack.Screen name='SettingsScreen' component={SettingsScreen} options={{ headerShown: false }}/>
         <Stack.Screen name='VideoCallScreen' component={VideoCallScreen} options={{ headerShown: false }}/>
-        <Stack.Screen name='LifeStyleScreen' component={LifestyleScreen} options={{ headerShown: false}}/>
-        <Stack.Screen name='InterestedInScreen' component={InterestedInScreen} options={{ headerShown: false}}/>
-        <Stack.Screen name='LookingForScreen' component={LookingForScreen} options={{ headerShown: false}}/>
-        <Stack.Screen name='ProfileCompletedScreen' component={ProfileCompletedScreen} options={{ headerShown: false}}/>
-        <Stack.Screen name='BasicInfoScreen' component={BasicInfoScreen} options={{ headerShown: false}}/>
-        <Stack.Screen name='AddPhotosScreen' component={AddPhotosScreen} options={{ headerShown: false}}/>
-        <Stack.Screen name='ProfessionalDetailsScreen' component={ProfessionalDetailsScreen} options={{ headerShown: false}}/>
-        <Stack.Screen name='YourInterestScreen' component={YourInterestScreen} options={{ headerShown: false}}/>
-        <Stack.Screen name='TabNavigator' component={TabNavigator} options={{ headerShown: false }}/>
         <Stack.Screen name='ChatRoomScreen' component={ChatRoomScreen} options={{ headerShown: false }}/>
         <Stack.Screen name='ViewProfileScreen' component={ViewProfileScreen} options={{ headerShown: false }}/>
-        <Stack.Screen name='DeleteAccountScreen' component={DeleteAccountScreen} options={{ headerShown: false }}/>
-        
+        <Stack.Screen name='DeleteAccountScreen' component={DeleteAccountScreen} options={{ headerShown: false }}/> 
+        <Stack.Screen name='EditProfileScreen' component={EditProfileScreen} options={{ headerShown: false }}/> 
+        <Stack.Screen name='AddPhotosScreen' component={AddPhotosScreen} options={{ headerShown: false}}/>
+        <Stack.Screen name='ProfileScreen' component={ProfileScreen} options={{ headerShown: false}}/>
+
         </>
         )}
-      </Stack.Navigator>
-        
+       </Stack.Navigator>       
     </NavigationContainer>
-  );
-}
+
+  )}
 
 export default AppNavigator

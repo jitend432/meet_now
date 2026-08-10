@@ -5,17 +5,19 @@ import {
   View, 
   ScrollView,
   Image, 
+  StatusBar
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../../constants/theme';
 import Button from '../../components/common/Button';
 import LogoImage from '../../assets/images/hexadating.png';
 import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-free-solid/static";
+import { FONTS } from '../../constants/fonts';
 
 const EmailSuccessScreen = ({ navigation }) => {
   const handleContinue = () => {
     //navigation.replace('TabNavigator')
-    navigation.navigate('AddPhotosScreen')
+    navigation.navigate('BasicInfoScreen')
   };
 
   return (
@@ -25,19 +27,21 @@ const EmailSuccessScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.headerContainer}>
+  <StatusBar backgroundColor="#ffffff" barStyle="dark-content" />
+          
           <View style={styles.logoRow}>
-            <Image 
+            {/* <Image 
               source={LogoImage} 
               style={styles.logoStyle} 
               resizeMode="contain" 
-            />
-            <Text style={styles.brandName}>Complete Your Profile</Text>
+            /> */}
+            {/* <Text style={styles.brandName}>Complete Your Profile</Text> */}
           </View>
         </View>
 
         <View style={styles.progressContainer}>
           <View style={styles.progressTextRow}>
-            <Text style={styles.progressStepText}>Step 1 of 5</Text>
+            <Text style={styles.progressStepText}>Step 1 of 8</Text>
             <Text style={styles.progressPercentageText}>15%</Text>
           </View>
           <View style={styles.progressBarTrack}>
@@ -115,8 +119,8 @@ const styles = StyleSheet.create({
   },
   brandName: {
     fontSize: 26,
-    fontWeight: '700',
     color: COLORS.primary,
+    fontFamily: FONTS.MEDIUM
   },
   progressContainer: {
     width: '100%',
@@ -193,18 +197,21 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: '700',
+    //fontWeight: '700',
     color: COLORS.primary,
     marginBottom: 14,
     textAlign: 'center',
+    fontFamily: FONTS.MEDIUM
   },
   subtitle: {
     fontSize: 16,
     color: COLORS.primary,
-    fontWeight: '500',
+   // fontWeight: '500',
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 32,
+    fontFamily: FONTS.REGULAR
+
   },
   secureBanner: {
     flexDirection: 'row',

@@ -5,16 +5,17 @@ import {
   View, 
   ScrollView, 
   TouchableOpacity,
-  Alert
+  Alert,
+  Image
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../components/common/Button';
 import { COLORS } from '../../constants/theme';
 import { FONTS } from '../../constants/fonts';
-
+import LogoImage from '../../assets/images/vynk_t.png';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
-import { authApi } from '../../services/authApi';
-import { setUserProfile, updateProfileDraft } from '../../redux/slices/authSlice';
+import { updateProfileDraft } from '../../redux/slices/authSlice';
+import { wp } from '../../utils/Scaling';
 
 
 const YourInterestScreen = ({ navigation }) => {
@@ -134,16 +135,17 @@ const YourInterestScreen = ({ navigation }) => {
           {/* Header Row */}
           <View style={styles.headerRow}>
             {/* Custom Icon Placeholder matching the image icon */}
-            <View style={styles.iconContainer}>
+            {/* <View style={styles.iconContainer}>
               <View style={styles.heartIconShape} />
-            </View>
+            </View> */}
+             <Image source={LogoImage} style={styles.logoStyle} resizeMode="contain" />
             <Text style={styles.cardTitle}>Complete Your Profile</Text>
           </View>
 
           {/* Progress Indicator */}
           <View style={styles.progressContainer}>
             <View style={styles.progressTextRow}>
-              <Text style={styles.progressStep}>Step 5 of 5</Text>
+              <Text style={styles.progressStep}>Step 5 of 8</Text>
               <Text style={styles.progressPercentage}>65%</Text>
             </View>
             <View style={styles.progressBarBg}>
@@ -223,14 +225,14 @@ const styles = StyleSheet.create({
   cardContainer: {
     backgroundColor:  COLORS.background,
     borderRadius: 24,
-    padding: 24,
+    padding: wp(5),
     width: '100%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.15,
     shadowRadius: 10,
     elevation: 5,
-    height:'auto'
+    //height:'auto'
   },
   headerRow: {
     flexDirection: 'row',
@@ -304,15 +306,16 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     marginBottom: 40,
+    gap:10,
   },
   interestChip: {
-    width: '47%',
+    width: '48%',
     height: 44,
     borderRadius: 12,
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: wp(3),
   },
   chipSelected: {
     backgroundColor: '#265c32',
@@ -356,5 +359,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     letterSpacing: 2,
     fontWeight: '600',
+  },
+  logoStyle: {
+    width: 40,
+    height: 40,
+    marginRight: 10,
   },
 });

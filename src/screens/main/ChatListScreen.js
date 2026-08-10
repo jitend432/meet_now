@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
+  StatusBar
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONTSIZE, RADIUS, SIZES } from '../../constants/theme';
@@ -77,17 +78,20 @@ const ChatListScreen = ({ navigation }) => {
         </View>
         
         <View style={styles.chatBodyRow}>
+
           <Text 
             style={[styles.messageText, item.unreadCount > 0 && styles.unreadMessageText]} 
             numberOfLines={1}
           >
             {item.lastMessage || 'No messages yet'}
           </Text>
-          {item.unreadCount > 0 && (
+
+          {/* {item.unreadCount > 0 && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{item.unreadCount}</Text>
             </View>
-          )}
+          )} */}
+
         </View>
       </View>
     </TouchableOpacity>
@@ -95,9 +99,11 @@ const ChatListScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.brandHeader}>
+       <StatusBar backgroundColor={COLORS.background} barStyle="dark-content" />
+       
+      {/* <View style={styles.brandHeader}>
         <Image source={LogoImage} style={styles.logoStyle} resizeMode="contain" />
-      </View>
+      </View> */}
 
       <View style={styles.titleContainer}>
         <Text style={styles.screenTitle}>Message</Text>
@@ -196,7 +202,7 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.REGULAR,
   },
   timeText: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#9E9E9E',
     fontFamily: FONTS.THIN,
   },

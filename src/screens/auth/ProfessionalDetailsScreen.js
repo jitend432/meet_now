@@ -111,7 +111,7 @@ const handleContinue = () => {
           {/* Progress Bar (Step 4 of 5 - 75%) */}
           <View style={styles.progressWrapper}>
             <View style={styles.progressTextRow}>
-              <Text style={styles.progressStepLabel}>Step 4 of 5</Text>
+              <Text style={styles.progressStepLabel}>Step 4 of 8</Text>
               <Text style={styles.progressPercentageMetric}>55%</Text>
             </View>
             <View style={styles.progressTrackBackground}>

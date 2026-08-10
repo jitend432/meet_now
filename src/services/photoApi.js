@@ -83,13 +83,22 @@ export const photoApi = {
   }
 },
 
+  // getUserPhotos: async (userId) => {
+  //   try {
+  //     const response = await apiService.get(`/photos/user/${userId}`);
+  //     return response.data; // Yeh { msg, status, data } return karega
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // },
+
   getUserPhotos: async (userId) => {
-    try {
-      const response = await apiService.get(`/photos/user/${userId}`);
-      return response.data; // Yeh { msg, status, data } return karega
-    } catch (error) {
-      throw error;
-    }
-  },
+  try {
+    const response = await apiService.get(`/photos/user/${userId}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+},
 
 };

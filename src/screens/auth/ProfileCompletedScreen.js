@@ -12,7 +12,8 @@ import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-fre
 import Geolocation from 'react-native-geolocation-service';
 import { requestLocationPermission } from '../../utils/locationPermission';
 import { authApi } from '../../services/authApi';
-import { useAppSelector } from '../../redux/hooks';
+import { useAppSelector, useAppDispatch } from '../../redux/hooks';
+import { setProfileCompleted } from '../../redux/slices/authSlice';
 
 export default function ProfileCompletedScreen({navigation}) {
   const [loading, setLoading] = useState(false);
@@ -21,6 +22,8 @@ export default function ProfileCompletedScreen({navigation}) {
   //const userId = useAppSelector((state) => state.auth.user?.id || state.auth.user?._id || state.auth.userProfile?.id);
   const registrationId = useAppSelector((state) => state.auth.userId || state.auth?.user?.registrationId )
   console.log("registrationId ====>", registrationId) 
+
+  const dispatch = useAppDispatch()
 
   const handleGoToDashboard = async () => {
     setLoading(true);
@@ -59,7 +62,8 @@ export default function ProfileCompletedScreen({navigation}) {
             console.error("Failed to save coordinates to backend:", apiError);
           } finally {
             setLoading(false);
-            navigation.navigate('TabNavigator');
+            //navigation.navigate('TabNavigator');
+            dispatch(setProfileCompleted(true));
           }
         },
         (error) => {

@@ -6,7 +6,8 @@ import {
   FlatList, 
   Image, 
   TouchableOpacity,
-  ActivityIndicator
+  ActivityIndicator,
+  StatusBar
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-free-solid/static";
@@ -18,6 +19,7 @@ import { COLORS, FONTSIZE } from '../../constants/theme';
 const BASE_URL = ""; 
 
 const MatchesScreen = ({ navigation }) => {
+  
   const [matches, setMatches] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -91,7 +93,8 @@ const MatchesScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <CardContainer title="Vynk Dating">
+       <StatusBar backgroundColor={COLORS.background} barStyle="dark-content" />
+      {/* <CardContainer title="Vynk Dating"> */}
         <View style={styles.mainLayoutContainer}>
           
           <Text style={styles.screenHeading}>Your Matches</Text>
@@ -137,7 +140,7 @@ const MatchesScreen = ({ navigation }) => {
           )}
 
         </View>
-      </CardContainer>
+      {/* </CardContainer> */}
     </SafeAreaView>
   );
 };
@@ -150,8 +153,9 @@ const styles = StyleSheet.create({
   },
   mainLayoutContainer: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingTop: 16,
+    backgroundColor:'#ffffff'
   },
   screenHeading: {
     fontSize: 26,
@@ -177,6 +181,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    margin:2
   },
   promoIconCircle: {
     width: 32,
@@ -216,6 +221,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 6,
     elevation: 2,
+    margin:2
   },
   avatarContainer: {
     position: 'relative',

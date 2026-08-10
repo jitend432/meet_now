@@ -159,7 +159,7 @@ const ChatRoom = () => {
         style={styles.keyboardView}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 25}
       >
-        <CardContainer title="Hexa Dating">
+        {/* <CardContainer title="Hexa Dating"> */}
           
           <View style={styles.navbarContainer}>
             <View style={styles.navLeftSection}>
@@ -276,7 +276,7 @@ const ChatRoom = () => {
             </TouchableOpacity>
           </View>
 
-        </CardContainer>
+        {/* </CardContainer> */}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
   inputFieldContainer: { 
     flex: 1, 
     height: 46, 
-    backgroundColor: '#a3e971',
+    backgroundColor: '#ffffff',
     borderRadius: 23, 
     paddingHorizontal: 18, 
     justifyContent: 'center', 

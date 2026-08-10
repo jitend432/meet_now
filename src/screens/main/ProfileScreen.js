@@ -8,7 +8,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  Linking
+  Linking,
+  StatusBar
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-free-solid/static";
@@ -28,7 +29,6 @@ const ProfileScreen = ({ navigation }) => {
   const dispatch = useAppDispatch()
   console.log("Profile Reg ID ==> ",registrationId)
   
-  // 2. States for API response management
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -65,7 +65,8 @@ const ProfileScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <CardContainer title="Vynk Dating">
+       <StatusBar backgroundColor={COLORS.background} barStyle="dark-content" />
+      {/* <CardContainer title="Vynk Dating"> */}
         <ScrollView 
           style={styles.scrollView} 
           contentContainerStyle={styles.scrollContent}
@@ -74,12 +75,14 @@ const ProfileScreen = ({ navigation }) => {
           {/* Header Row: Title & Edit Button */}
           <View style={styles.headerRow}>
             <Text style={styles.screenHeading}>My Profile</Text>
+
             <TouchableOpacity style={styles.editButton} activeOpacity={0.7}
-            onPress={() => navigation.navigate('AddPhotosScreen')}
+            onPress={() => navigation.navigate('EditProfileScreen')}
             >
               <FontAwesomeFreeSolid name="edit" size={12} color="#ffffff" />
               <Text style={styles.editButtonText}>Edit</Text>
             </TouchableOpacity>
+
           </View>
 
           {/* User Mini Profile Card */}
@@ -184,6 +187,14 @@ const ProfileScreen = ({ navigation }) => {
                 {userData?.bio || 'Write something interesting about yourself...'}
               </Text>
             </View>
+
+             <View style={styles.fieldBlock}>
+              <Text style={styles.fieldLabel}>Profile Completion</Text>
+              <Text style={styles.aboutParagraphText}>
+                {userData?.profileCompletion ? `${userData.profileCompletion}%` : '0%'}
+              </Text>
+            </View>
+
           </View>
 
           {/* Interests Card Section */}
@@ -208,7 +219,7 @@ const ProfileScreen = ({ navigation }) => {
           </View>
 
         </ScrollView>
-      </CardContainer>
+      {/* </CardContainer> */}
     </SafeAreaView>
   );
 };
@@ -218,7 +229,7 @@ export default ProfileScreen;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-   // backgroundColor: '#ffffff', 
+    backgroundColor: '#ffffff', 
     paddingBottom:30
   },
   scrollView: {
