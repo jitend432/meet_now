@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   StyleSheet, 
   Text, 
@@ -23,8 +23,9 @@ import Animated, {
   runOnJS,
   interpolate
 } from 'react-native-reanimated';
+import { useFocusEffect } from '@react-navigation/native';
 
-import CardContainer from '../../components/chat/CardContainer';
+//import CardContainer from '../../components/chat/CardContainer';
 import userApi from '../../services/userApi';
 import { matchApi } from '../../services/matchApi';
 import { FONTS } from '../../constants/fonts';
@@ -33,6 +34,7 @@ import { useAppSelector } from '../../redux/hooks';
 import { COLORS } from '../../constants/theme';
 import { CustomModal } from '../../components/common/CustomModal';
 import LinearGradient from 'react-native-linear-gradient';
+import ProfilePhotoCarousel from '../../components/common/ProfilePhotoCarousel';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.4;
@@ -41,10 +43,41 @@ import { setUserProfile } from '../../redux/slices/authSlice';
 import { authApi } from '../../services/authApi';
 import { useAppDispatch } from '../../redux/hooks';
 
-const DiscoverScreen = () => {
+const DiscoverScreen = ({navigation}) => {
+
+  //user profile call
+  const dispatch = useAppDispatch()
+  const registrationId = useAppSelector((state) => state.auth.userId)
+
+
+useFocusEffect(
+  useCallback(() => {
+    const fetchAndDispatchData = async () => {
+      try {
+        if (!registrationId) return;
+
+        const dynamicData = await authApi.getMyProfile(registrationId);
+
+        if (dynamicData) {
+          dispatch(setUserProfile(dynamicData));
+          console.log('✅ Profile Data Successfully Saved to Redux:', dynamicData);
+        }
+      } catch (error) {
+        console.error('Failed to fetch and dispatch profile:', error);
+      }
+    };
+
+    fetchAndDispatchData();
+  }, [registrationId, dispatch])
+);
+
+// end profile
 
   const user = useAppSelector((state) => state.auth.user)
-  const profileCompletion = user?.profileCompletion ?? 0;
+  //const profileCompletion = user?.profileCompletion ?? 0;
+  const profileData = user?.data || user;
+const profileCompletion = profileData?.profileCompletion ?? 0;
+  console.log("Profile Completion Discover screen  ====>",profileCompletion)
   const [showIncompleteModal, setShowIncompleteModal] = useState(false);
   const checkProfileCompletion = () => {
   if (profileCompletion < 60) {
@@ -55,34 +88,9 @@ const DiscoverScreen = () => {
 };
 
 
-////user profile call
-  const dispatch = useAppDispatch()
-  const registrationId = useAppSelector((state) => state.auth.userId)
 
 
-useEffect(() => {
-  const fetchAndDispatchData = async () => {
-    try {
-      if (!registrationId) return;
 
-      
-      const dynamicData = await authApi.getMyProfile(registrationId);
-
-      // 2. Dispatch directly to Redux
-      if (dynamicData) {
-        dispatch(setUserProfile(dynamicData));
-        console.log('✅ Profile Data Successfully Saved to Redux:', dynamicData);
-      }
-    } catch (error) {
-      console.error('Failed to fetch and dispatch profile:', error);
-    }
-  };
-
-  fetchAndDispatchData();
-}, [registrationId, dispatch]);
-
-
-// end profile
  //console.log("NearByscreen userDetails current login user",user.profileCompletion)
 
   const { distance, minAge, maxAge } = useAppSelector((state) => state.auth.discoverySettings);
@@ -262,37 +270,88 @@ useEffect(() => {
     });
   };
 
+  // const gesture = Gesture.Pan()
+  //   .enabled(!isLoading && !!currentProfile && !isExpanded)
+  //   .onStart(() => {
+  //     contextX.value = translateX.value;
+  //     contextY.value = translateY.value;
+  //   })
+  //   .onUpdate((event) => {
+  //     translateX.value = contextX.value + event.translationX;
+  //     translateY.value = contextY.value + event.translationY;
+  //   })
+  //   .onEnd((event) => {
+  //     if (isSwiping.current) return;
+
+  //     const isFastRight = event.velocityX > 800;
+  //     const isFastLeft = event.velocityX < -800;
+  //     const isPastRightThreshold = translateX.value > SWIPE_THRESHOLD;
+  //     const isPastLeftThreshold = translateX.value < -SWIPE_THRESHOLD;
+
+  //     if (isFastRight || isPastRightThreshold) {
+  //       translateX.value = withTiming(SCREEN_WIDTH + 150, { duration: 200 }, (isFinished) => {
+  //         if (isFinished) runOnJS(handleSwipeAction)('right');
+  //       });
+  //     } else if (isFastLeft || isPastLeftThreshold) {
+  //       translateX.value = withTiming(-SCREEN_WIDTH - 150, { duration: 200 }, (isFinished) => {
+  //         if (isFinished) runOnJS(handleSwipeAction)('left');
+  //       });
+  //     } else {
+  //       translateX.value = withSpring(0, { damping: 15 });
+  //       translateY.value = withSpring(0, { damping: 15 });
+  //     }
+  //   });
+
+  const handleInvalidProfileSwipe = () => {
+  checkProfileCompletion();
+};
+
   const gesture = Gesture.Pan()
-    .enabled(!isLoading && !!currentProfile && !isExpanded)
-    .onStart(() => {
-      contextX.value = translateX.value;
-      contextY.value = translateY.value;
-    })
-    .onUpdate((event) => {
-      translateX.value = contextX.value + event.translationX;
-      translateY.value = contextY.value + event.translationY;
-    })
-    .onEnd((event) => {
-      if (isSwiping.current) return;
+  .enabled(!isLoading && !!currentProfile && !isExpanded)
+  .onStart(() => {
+    if (profileCompletion < 60) {
+      runOnJS(handleInvalidProfileSwipe)();
+      contextX.value = 0;
+      contextY.value = 0;
+      return;
+    }
 
-      const isFastRight = event.velocityX > 800;
-      const isFastLeft = event.velocityX < -800;
-      const isPastRightThreshold = translateX.value > SWIPE_THRESHOLD;
-      const isPastLeftThreshold = translateX.value < -SWIPE_THRESHOLD;
+    contextX.value = translateX.value;
+    contextY.value = translateY.value;
+  })
+  .onUpdate((event) => {
+    if (profileCompletion < 60) return;
 
-      if (isFastRight || isPastRightThreshold) {
-        translateX.value = withTiming(SCREEN_WIDTH + 150, { duration: 200 }, (isFinished) => {
-          if (isFinished) runOnJS(handleSwipeAction)('right');
-        });
-      } else if (isFastLeft || isPastLeftThreshold) {
-        translateX.value = withTiming(-SCREEN_WIDTH - 150, { duration: 200 }, (isFinished) => {
-          if (isFinished) runOnJS(handleSwipeAction)('left');
-        });
-      } else {
-        translateX.value = withSpring(0, { damping: 15 });
-        translateY.value = withSpring(0, { damping: 15 });
-      }
-    });
+    translateX.value = contextX.value + event.translationX;
+    translateY.value = contextY.value + event.translationY;
+  })
+  .onEnd((event) => {
+    if (profileCompletion < 60) {
+      translateX.value = withSpring(0);
+      translateY.value = withSpring(0);
+      return;
+    }
+
+    if (isSwiping.current) return;
+
+    const isFastRight = event.velocityX > 800;
+    const isFastLeft = event.velocityX < -800;
+    const isPastRightThreshold = translateX.value > SWIPE_THRESHOLD;
+    const isPastLeftThreshold = translateX.value < -SWIPE_THRESHOLD;
+
+    if (isFastRight || isPastRightThreshold) {
+      translateX.value = withTiming(SCREEN_WIDTH + 150, { duration: 200 }, (isFinished) => {
+        if (isFinished) runOnJS(handleSwipeAction)('right');
+      });
+    } else if (isFastLeft || isPastLeftThreshold) {
+      translateX.value = withTiming(-SCREEN_WIDTH - 150, { duration: 200 }, (isFinished) => {
+        if (isFinished) runOnJS(handleSwipeAction)('left');
+      });
+    } else {
+      translateX.value = withSpring(0, { damping: 15 });
+      translateY.value = withSpring(0, { damping: 15 });
+    }
+  });
 
   const cardAnimatedStyle = useAnimatedStyle(() => {
     const rotate = interpolate(
@@ -403,19 +462,19 @@ useEffect(() => {
                     contentContainerStyle={{ flexGrow: 1 }}
                   >
                     {/* PHOTO BANNER (Smooth Animated Height) */}
-                    <Animated.View style={[styles.photoContainerBase, animatedPhotoStyle]}>
+                    {/* <Animated.View style={[styles.photoContainerBase, animatedPhotoStyle]}>
 
                       <Image 
                         source={
                           currentProfile?.profilePhoto 
                             ? { uri: currentProfile.profilePhoto }
-                            : require('../../assets/images/img.jpg') 
+                            : require('../../assets/images/u.png') 
                         } 
                         style={styles.cardMainPhoto}
                         resizeMode="cover"
                       />
 
-                      {/* ARROW BUTTON */}
+                    
                       <TouchableOpacity 
                         style={styles.infoArrowButton} 
                         onPress={() => setIsExpanded(!isExpanded)}
@@ -428,22 +487,8 @@ useEffect(() => {
                         />
                       </TouchableOpacity>
 
-                      {/* UNEXPANDED OVERLAY */}
+                      
                       {!isExpanded && (
-                        // <View style={styles.profileDetailsOverlay}>
-                        //   <View style={styles.nameContainer}>
-                        //     <Text style={styles.profileName}>{currentProfile.name}</Text>
-                        //     <Text style={styles.profileAge}>, {currentProfile.age}</Text>
-                        //   </View>
-                        //   <View style={styles.metaRow}>
-                        //     <FontAwesomeFreeSolid name="briefcase" size={13} color="#e0e0e0" style={styles.metaIcon} />
-                        //     <Text style={styles.metaText}>{currentProfile.role || currentProfile.profession}</Text>
-                        //   </View>
-                        //   <View style={styles.metaRow}>
-                        //     <FontAwesomeFreeSolid name="map-marker-alt" size={13} color="#e0e0e0" style={styles.metaIcon} />
-                        //     <Text style={styles.metaText}>{currentProfile.location || currentProfile.city}</Text>
-                        //   </View>
-                        // </View>
 
                         <LinearGradient
                           colors={['transparent', 'rgba(0, 0, 0, 0.4)', 'rgba(0, 0, 0, 0.85)']}
@@ -465,7 +510,66 @@ useEffect(() => {
                         </LinearGradient>
                       )}
                       
-                    </Animated.View>
+                    </Animated.View> */}
+
+
+                    <Animated.View style={[styles.photoContainerBase, animatedPhotoStyle]}>
+
+  {/* 1. PHOTO CAROUSEL COMPONENT */}
+  <ProfilePhotoCarousel 
+    photos={
+      currentProfile?.othersPhotos?.length > 0 
+        ? currentProfile.othersPhotos 
+        : currentProfile?.otherPhotos?.length > 0
+          ? currentProfile.otherPhotos
+          : currentProfile?.profilePhoto 
+            ? [currentProfile.profilePhoto] 
+            : []
+    }
+    defaultImage={require('../../assets/images/u.png')}
+  />
+
+  {/* 2. ARROW BUTTON */}
+  <TouchableOpacity 
+    style={styles.infoArrowButton} 
+    onPress={() => setIsExpanded(!isExpanded)}
+    activeOpacity={0.8}
+  >
+    <FontAwesomeFreeSolid 
+      name={isExpanded ? "arrow-down" : "arrow-up"} 
+      size={32} 
+      color="#ffffff" 
+    />
+  </TouchableOpacity>
+
+  {/* 3. UNEXPANDED DETAILS OVERLAY */}
+  {!isExpanded && (
+    <LinearGradient
+      colors={['transparent', 'rgba(0, 0, 0, 0.4)', 'rgba(0, 0, 0, 0.85)']}
+      locations={[0, 0.3, 1]}
+      style={styles.profileDetailsOverlay}
+      pointerEvents="box-none"
+    >
+      <View style={styles.nameContainer}>
+        <Text style={styles.profileName}>{currentProfile.name}</Text>
+        <Text style={styles.profileAge}>, {currentProfile.age}</Text>
+      </View>
+      <View style={styles.metaRow}>
+        <FontAwesomeFreeSolid name="briefcase" size={13} color="#ffffff" style={styles.metaIcon} />
+        <Text style={styles.metaText}>{currentProfile.role || currentProfile.profession}</Text>
+      </View>
+      {/* <View style={styles.metaRow}>
+        <FontAwesomeFreeSolid name="map-marker-alt" size={13} color="#ffffff" style={styles.metaIcon} />
+        <Text style={styles.metaText}>{currentProfile.location || currentProfile.city}</Text>
+      </View> */}
+       <View style={styles.metaRow}>
+        <FontAwesomeFreeSolid name="map-marker-alt" size={13} color="#ffffff" style={styles.metaIcon} />
+        <Text style={styles.metaText}>{currentProfile.distanceInKm} km away</Text>
+      </View>
+    </LinearGradient>
+  )}
+
+</Animated.View>
 
                     {/* EXPANDED CONTENT AREA (Smooth Fade & Slide) */}
                     {isExpanded && (

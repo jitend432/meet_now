@@ -134,7 +134,7 @@ const handleComplete = async () => {
         {/* Progress Bar Area */}
         <View style={styles.progressContainer}>
           <View style={styles.progressTextRow}>
-            <Text style={styles.progressSub}>Step 4 of 5</Text>
+            <Text style={styles.progressSub}>Step 6 of 6</Text>
             <Text style={styles.progressPercent}>95%</Text>
           </View>
           <View style={styles.progressBarBackground}>

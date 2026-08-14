@@ -7,11 +7,12 @@ import MatchesScreen from '../screens/main/MatchesScreen'
 import ProfileScreen from '../screens/main/ProfileScreen'
 import SettingsScreen from '../screens/main/SettingsScreen'
 import ChatListScreen from '../screens/main/ChatListScreen';
-import ChatRoom from '../screens/main/ChatRoomScreen';
 import ViewProfileScreen from '../screens/main/ViewProfileScreen';
 import MediaPhotosScreen from '../screens/main/MediaPhotos';
 import SearchChatScreen from '../screens/main/SearchChatScreen';
 import { COLORS } from '../constants/theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import EditProfileScreen from '../screens/main/EditProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -23,11 +24,7 @@ const ChatStack = () => {
         component={ChatListScreen} 
         options={{ headerShown: false }}
       />      
-      {/* <Stack.Screen 
-        name="ChatRoom" 
-        component={ChatRoom} 
-        options={{ headerShown: false }}
-      /> */}
+     
       <Stack.Screen 
         name="ViewProfileScreen" 
         component={ViewProfileScreen} 
@@ -43,6 +40,18 @@ const ChatStack = () => {
         component={SearchChatScreen} 
         options={{ headerShown: false }}
       />
+
+       {/* <Stack.Screen 
+        name="EditProfileScreen" 
+        component={EditProfileScreen} 
+        options={{ headerShown: false }}
+      /> */}
+
+       {/* <Stack.Screen 
+        name="ProfileScreen" 
+        component={ProfileScreen} 
+        options={{ headerShown: false }}
+      /> */}
     </Stack.Navigator>
   );
 };
@@ -50,8 +59,13 @@ const ChatStack = () => {
 const Tab = createBottomTabNavigator()
 
 const TabNavigator = () => {
+
+  const insets = useSafeAreaInsets();
+  const bottomInset = insets.bottom > 0 ? insets.bottom : 10;
+
   return (
     <Tab.Navigator screenOptions={({ route }) => ({
+
         headerShown: false,
         tabBarIcon: ({ color, size }) => {
           let iconName;
@@ -74,38 +88,26 @@ const TabNavigator = () => {
         tabBarInactiveTintColor: '#557c55',
         tabBarHideOnKeyboard: true,
 
-        // tabBarIconStyle: {
-        //     marginTop: 6,
-        //     marginBottom: -2,
-
-        // },
-
         tabBarLabelStyle: {
           fontSize: 12,         
           fontWeight: '900',    
           fontFamily: 'CustomFont', 
-          paddingTop: 5 
+          paddingTop: 2 
         },
         
         tabBarItemStyle: {
-          height: 60,
+          //height: 60,
           backgroundColor: COLORS.background,
+          paddingVertical: 4,
         
         },
         tabBarStyle: {
-            position: 'absolute',     
-               //bottom: 20,              
-               //left: '5%',             
-               //right: '5%',
-               //width: '90%',            
-               height: 60,             
+            position: 'absolute',                 
+               height: 60 + bottomInset,           
                borderRadius: 8,        
-               backgroundColor: '#ffffff',              
-               //shadowColor: '#000',
-               //shadowOffset: { width: 0, height: 10 },
-               //shadowOpacity: 0.1,
-               //shadowRadius: 10,
-               //elevation: 5,
+               backgroundColor: '#ffffff',  
+               borderTopWidth: 0,
+              elevation: 5,                           
         }
       })}>
         <Tab.Screen name='Discover' component={DiscoverScreen} options={{ headerShown: false }}/>

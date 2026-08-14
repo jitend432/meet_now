@@ -145,7 +145,7 @@ const YourInterestScreen = ({ navigation }) => {
           {/* Progress Indicator */}
           <View style={styles.progressContainer}>
             <View style={styles.progressTextRow}>
-              <Text style={styles.progressStep}>Step 5 of 8</Text>
+              <Text style={styles.progressStep}>Step 3 of 6</Text>
               <Text style={styles.progressPercentage}>65%</Text>
             </View>
             <View style={styles.progressBarBg}>

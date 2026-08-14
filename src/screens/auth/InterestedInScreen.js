@@ -105,7 +105,7 @@ export default function InterestedInScreen({navigation}) {
         {/* Progress Bar Area */}
         <View style={styles.progressContainer}>
           <View style={styles.progressTextRow}>
-            <Text style={styles.progressSub}>Step 4 of 5</Text>
+            <Text style={styles.progressSub}>Step 5 of 6</Text>
             <Text style={styles.progressPercent}>75%</Text>
           </View>
           <View style={styles.progressBarBackground}>

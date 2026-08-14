@@ -5,13 +5,13 @@ import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-fre
 const ChatActionButtons = ({ onCall, onVideo, onMenu }) => {
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.btn} onPress={onCall} activeOpacity={0.7}>
+      {/* <TouchableOpacity style={styles.btn} onPress={onCall} activeOpacity={0.7}>
         <FontAwesomeFreeSolid name="phone" size={18} color="#265c32" />
       </TouchableOpacity>
       
       <TouchableOpacity style={styles.btn} onPress={onVideo} activeOpacity={0.7}>
         <FontAwesomeFreeSolid name="video" size={18} color="#265c32" />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
       
       <TouchableOpacity style={styles.btn} onPress={onMenu} activeOpacity={0.7}>
         <FontAwesomeFreeSolid name="ellipsis-v" size={20} color="#265c32" />

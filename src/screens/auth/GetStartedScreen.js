@@ -5,7 +5,8 @@ import {
   View, 
   Image,
   TouchableOpacity,
-  StatusBar
+  StatusBar,
+  Linking
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FONTS } from '../../constants/fonts';
@@ -34,31 +35,62 @@ const GetStartedScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.textHeadingGroup}>
-          <Text style={styles.mainCatchphraseText}>Find meaningful</Text>
-          <Text style={styles.mainCatchphraseText}>connections</Text>
+          {/* <Text style={styles.mainCatchphraseText}>Find meaningful</Text>
+          <Text style={styles.mainCatchphraseText}>connections</Text> */}
           
-          <Text style={styles.subtextParagraph}>
-            Join a community of single looking for real relationships.
+          {/* <Text style={styles.subtextParagraph}>
+             By tapping ‘Create account’ or ‘Sign in’, you agree to
+             {'\n'}
+             our <Text style={styles.linkText} onPress={() => Linking.openURL('https://vynkdating.com/terms-of-service')}>Terms</Text>. Learn how we process your data in our
+             {'\n'}
+             <Text style={styles.linkText} onPress={() => Linking.openURL('https://vynkdating.com/privacy-policy')}>Privacy Policy</Text> and <Text style={styles.linkText} onPress={() => Linking.openURL('https://vynkdating.com/privacy-policy')}>Cookies Policy</Text>.
+           </Text> */}
+
+           <Text style={styles.subtextParagraph}>
+            By tapping ‘Create account’ or ‘Sign in’, you agree to our{' '}
+            <Text style={styles.linkText} onPress={() => Linking.openURL('https://vynkdating.com/terms-of-service')}>
+              Terms
+            </Text>
+            . Learn how we process your data in our{' '}
+            <Text style={styles.linkText} onPress={() => Linking.openURL('https://vynkdating.com/privacy-policy')}>
+              Privacy Policy
+            </Text>{' '}
+            and{' '}
+            <Text style={styles.linkText} onPress={() => Linking.openURL('https://vynkdating.com/privacy-policy')}>
+              Cookies Policy
+            </Text>
+            .
           </Text>
+
         </View>
 
         <View style={styles.actionFooterArea}>
+
           <TouchableOpacity 
+            style={styles.getStartedButton} 
+            activeOpacity={0.85}
+            onPress={() => navigation?.navigate('SignupScreen')}
+          >
+            <Text style={styles.getStartedButtonText}>Create account</Text>
+          </TouchableOpacity>
+
+           <TouchableOpacity 
             style={styles.getStartedButton} 
             activeOpacity={0.85}
             onPress={() => navigation?.navigate('OnboardingScreen')}
           >
-            <Text style={styles.getStartedButtonText}>Get Started</Text>
+            <Text style={styles.getStartedButtonText}>Sign in</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
             activeOpacity={0.7} 
             style={styles.loginRedirectTrigger}
             // onPress={() => alert('Navigate to Login Screen')}
-            onPress={() => navigation?.navigate('LoginScreen')}
+            // onPress={() => navigation?.navigate('LoginScreen')}
           >
             <Text style={styles.accountCheckLabel}>
-              Already have an account? <Text style={styles.loginBoldHighlight}>Login</Text>
+              Trouble signing in? 
+              {/* <Text style={styles.loginBoldHighlight}>Login</Text> */}
             </Text>
           </TouchableOpacity>
         </View>
@@ -88,7 +120,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     position:'relative',
-    top:80
+    top:120
   },
   appLogoImage: {
     width: SIZES.avatarlg,
@@ -105,7 +137,8 @@ const styles = StyleSheet.create({
   textHeadingGroup: {
     alignItems: 'center',
     width: '100%',
-    marginVertical: 20,
+    top: 100
+   // marginVertical: 20,
     //overflow:'visible'
   },
   mainCatchphraseText: {
@@ -121,8 +154,8 @@ const styles = StyleSheet.create({
     fontSize: FONTSIZE.xs,
     color: COLORS.button2,
     textAlign: 'center',
-    lineHeight: 40,
-    marginTop: 18,
+    lineHeight: 25,
+    marginTop: 28,
     paddingHorizontal: 16,
     fontFamily: FONTS.REGULAR
   },
@@ -134,18 +167,18 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.button2,
     width: '100%',
     height: 52,
-    borderRadius: 12,
+    borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   getStartedButtonText: {
     color: COLORS.white, 
     fontSize: FONTSIZE.xs,
-    fontFamily: FONTS.BOLD
+    fontFamily: FONTS.BOLD,
   },
   loginRedirectTrigger: {
-    paddingVertical: 4,
+    paddingVertical: 10,
   },
   accountCheckLabel: {
     color: '#2f5f33',
@@ -155,5 +188,9 @@ const styles = StyleSheet.create({
   loginBoldHighlight: {
     color: COLORS.button2,
     fontFamily: FONTS.MEDIUM
+  },
+  linkText: {
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
   },
 });

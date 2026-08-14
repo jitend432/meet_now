@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   StyleSheet, 
   Text, 
@@ -7,9 +7,11 @@ import {
   Image, 
   TouchableOpacity,
   ActivityIndicator,
-  StatusBar
+  StatusBar,
+  RefreshControl // <--- 1. Import RefreshControl
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native'; // <--- 2. Import useFocusEffect
 import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-free-solid/static";
 import CardContainer from '../../components/chat/CardContainer';
 import { matchApi } from '../../services/matchApi';
@@ -19,18 +21,26 @@ import { COLORS, FONTSIZE } from '../../constants/theme';
 const BASE_URL = ""; 
 
 const MatchesScreen = ({ navigation }) => {
-  
   const [matches, setMatches] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false); // <--- State for Pull-to-Refresh
   const [hasError, setHasError] = useState(false);
 
-  useEffect(() => {
-    fetchMatchesData();
-  }, []);
+  // Screen par vapas aane par automatically data update karne ke liye
+  useFocusEffect(
+    useCallback(() => {
+      fetchMatchesData();
+    }, [])
+  );
 
-  const fetchMatchesData = async () => {
+  const fetchMatchesData = async (isPullToRefresh = false) => {
     try {
-      setIsLoading(true);
+      if (isPullToRefresh) {
+        setIsRefreshing(true);
+      } else if (matches.length === 0) {
+        setIsLoading(true);
+      }
+
       setHasError(false);
       
       const response = await matchApi.getMyMatches();
@@ -44,7 +54,12 @@ const MatchesScreen = ({ navigation }) => {
       setHasError(true);
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
+  };
+
+  const onRefresh = () => {
+    fetchMatchesData(true);
   };
 
   const renderMatchCard = ({ item }) => {
@@ -93,54 +108,61 @@ const MatchesScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-       <StatusBar backgroundColor={COLORS.background} barStyle="dark-content" />
-      {/* <CardContainer title="Vynk Dating"> */}
-        <View style={styles.mainLayoutContainer}>
-          
-          <Text style={styles.screenHeading}>Your Matches</Text>
-          <Text style={styles.matchesCountText}>
-            You have {matches.length} {matches.length === 1 ? 'match' : 'matches'}
-          </Text>
+      <StatusBar backgroundColor={COLORS.background} barStyle="dark-content" />
+      <View style={styles.mainLayoutContainer}>
+        
+        <Text style={styles.screenHeading}>Your Matches</Text>
+        <Text style={styles.matchesCountText}>
+          You have {matches.length} {matches.length === 1 ? 'match' : 'matches'}
+        </Text>
 
-          <View style={styles.promoBanner}>
-            <View style={styles.promoIconCircle}>
-              <FontAwesomeFreeSolid name="heart" size={14} color="#265c32" />
-            </View>
-            <View style={styles.promoTextSection}>
-              <Text style={styles.promoTitle}>New Matches</Text>
-              <Text style={styles.promoSubtitle}>Start a conversation with your matches!</Text>
-            </View>
+        <View style={styles.promoBanner}>
+          <View style={styles.promoIconCircle}>
+            <FontAwesomeFreeSolid name="heart" size={14} color="#265c32" />
           </View>
-
-          {isLoading && matches.length === 0 ? (
-            <View style={styles.centerContainer}>
-              <ActivityIndicator size="large" color="#265c32" />
-              <Text style={styles.infoText}>Loading matches...</Text>
-            </View>
-          ) : hasError ? (
-            <View style={styles.centerContainer}>
-              <Text style={styles.infoText}>Couldn't load matches.</Text>
-              <TouchableOpacity style={styles.retryButton} onPress={fetchMatchesData}>
-                <Text style={styles.retryText}>Retry</Text>
-              </TouchableOpacity>
-            </View>
-          ) : matches.length === 0 ? (
-            <View style={styles.centerContainer}>
-              <FontAwesomeFreeSolid name="user-friends" size={40} color="#ccc" />
-              <Text style={styles.infoText}>No active matches found yet!</Text>
-            </View>
-          ) : (
-            <FlatList
-              data={matches}
-              keyExtractor={(item) => (item.userId || Math.random()).toString()}
-              renderItem={renderMatchCard}
-              contentContainerStyle={styles.listContainer}
-              showsVerticalScrollIndicator={false}
-            />
-          )}
-
+          <View style={styles.promoTextSection}>
+            <Text style={styles.promoTitle}>New Matches</Text>
+            <Text style={styles.promoSubtitle}>Start a conversation with your matches!</Text>
+          </View>
         </View>
-      {/* </CardContainer> */}
+
+        {isLoading && matches.length === 0 ? (
+          <View style={styles.centerContainer}>
+            <ActivityIndicator size="large" color="#265c32" />
+            <Text style={styles.infoText}>Loading matches...</Text>
+          </View>
+        ) : hasError ? (
+          <View style={styles.centerContainer}>
+            <Text style={styles.infoText}>Couldn't load matches.</Text>
+            <TouchableOpacity style={styles.retryButton} onPress={() => fetchMatchesData()}>
+              <Text style={styles.retryText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        ) : matches.length === 0 ? (
+          <View style={styles.centerContainer}>
+            <FontAwesomeFreeSolid name="user-friends" size={40} color="#ccc" />
+            <Text style={styles.infoText}>No active matches found yet!</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={matches}
+            keyExtractor={(item) => (item.userId || item.id || Math.random()).toString()}
+            renderItem={renderMatchCard}
+            contentContainerStyle={styles.listContainer}
+            showsVerticalScrollIndicator={false}
+            // Pull-To-Refresh Features Add Kiye Hain
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={onRefresh}
+                colors={['#265c32']} // Android loader color
+                tintColor="#265c32"  // iOS loader color
+              />
+            }
+          />
+        )}
+
+      </View>
     </SafeAreaView>
   );
 };
@@ -188,7 +210,7 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 16,
     backgroundColor: '#ffffff',
-    justifyContent: 'center',
+    justify: 'center',
     alignItems: 'center',
     marginRight: 14,
   },
@@ -256,7 +278,6 @@ const styles = StyleSheet.create({
   },
   matchName: {
     fontSize: 15,
-    //fontWeight: '700',
     color: '#265c32',
     marginRight: 6,
     fontFamily: FONTS.REGULAR

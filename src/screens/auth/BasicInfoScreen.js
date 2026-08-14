@@ -6,7 +6,9 @@ import {
   ScrollView,
   Image, 
   TouchableOpacity, 
-  Alert
+  Alert,
+  KeyboardAvoidingView, 
+  Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../../constants/theme';
@@ -16,6 +18,7 @@ import LogoImage from '../../assets/images/vynk_t.png';
 import Dropdown from '../../components/common/Dropdown';
 import DatePickerInput from '../../components/common/DatePickerInput';
 import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-free-solid/static";
+import { CustomModal } from '../../components/common/CustomModal';
 
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { updateProfileDraft } from '../../redux/slices/authSlice';
@@ -27,6 +30,21 @@ const BasicInformationScreen = ({ navigation }) => {
   //const userId = useAppSelector((state) => state.auth.userId)
   //const existingUser = useAppSelector((state) => state.auth.user);
 
+  // Modal State
+const [modalConfig, setModalConfig] = useState({
+  visible: false,
+  title: '',
+  message: '',
+  type: 'warning',
+});
+
+// Modal Close Handler
+const closeModal = () => {
+  setModalConfig((prev) => ({ ...prev, visible: false }));
+};
+
+
+
   const dispatch = useAppDispatch()
 
   const [age, setAge] = useState(''); 
@@ -35,7 +53,7 @@ const BasicInformationScreen = ({ navigation }) => {
   const [aboutMe, setAboutMe] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const genderOptions = ['MALE', 'FEMALE', 'OTHERS'];
+  const genderOptions = ['MALE', 'FEMALE', 'OTHER'];
 
  
 // const handleContinue = async () => {
@@ -79,7 +97,13 @@ const BasicInformationScreen = ({ navigation }) => {
 
 const handleContinue = () => {
   if (!age || !gender || !aboutMe || !fullName ) {
-    Alert.alert('Validation Error', 'Please fill all mandatory fields.');
+    //Alert.alert('Validation Error', 'Please fill all mandatory fields.');
+    setModalConfig({
+      visible: true,
+      type: 'warning',
+      title: 'Validation Error',
+      message: 'Please fill all mandatory fields.',
+    });
     return;
   }
 
@@ -99,9 +123,15 @@ const handleContinue = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView 
+    style={{ flex: 1 }} 
+    behavior={Platform.OS === 'android' ? 'height' : 'padding'}
+  >
       <ScrollView 
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled" 
+        automaticallyAdjustKeyboardInsets={true}
       >
                
         <View style={styles.cardWrapper}>
@@ -121,7 +151,7 @@ const handleContinue = () => {
           <View style={styles.progressWrapper}>
 
             <View style={styles.progressTextRow}>
-              <Text style={styles.progressStepLabel}>Step 3 of 8</Text>
+              <Text style={styles.progressStepLabel}>Step 1 of 6</Text>
               <Text style={styles.progressPercentageMetric}>35%</Text>
             </View>
             
@@ -223,6 +253,15 @@ const handleContinue = () => {
         </View>
 
       </ScrollView>
+      </KeyboardAvoidingView>
+      <CustomModal
+        visible={modalConfig.visible}
+        onClose={closeModal}
+        type={modalConfig.type}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        dismissable={true}
+      />
     </SafeAreaView>
   );
 };

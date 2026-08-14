@@ -69,22 +69,39 @@ export default function LifestyleScreen({navigation}) {
   // };
   
   
-  const drinkingOptions = [
-   'YES',
-  'I_DRINK_SOMETIMES',
-  'I_RARELY_DRINK',
-  'NO',
-  'I_AM_SOBER'
-  ];
+  // const drinkingOptions = [
+  //  'YES',
+  // 'I_DRINK_SOMETIMES',
+  // 'I_RARELY_DRINK',
+  // 'NO',
+  // 'I_AM_SOBER'
+  // ];
 
-  const smokingOptions = [
-  'YES',
-  'NO',
-  'I_SMOKE',
-  'I_SMOKE_SOMETIMES',
-  'I_DONT_SMOKE',
-  'I_AM_TRYING_TO_QUIT'
-  ];
+  // const smokingOptions = [
+  // 'YES',
+  // 'NO',
+  // 'I_SMOKE',
+  // 'I_SMOKE_SOMETIMES',
+  // 'I_DONT_SMOKE',
+  // 'I_AM_TRYING_TO_QUIT'
+  // ];
+
+  const drinkingOptions = [
+  { label: 'Yes', value: 'YES' },
+  { label: 'Drink Sometimes', value: 'I_DRINK_SOMETIMES' },
+  { label: 'Rarely Drink', value: 'I_RARELY_DRINK' },
+  { label: 'No', value: 'NO' },
+  { label: 'Sober', value: 'I_AM_SOBER' },
+];
+
+const smokingOptions = [
+  { label: 'Yes', value: 'YES' },
+  { label: 'No', value: 'NO' },
+  { label: 'Smoke', value: 'I_SMOKE' },
+  { label: 'Smoke Sometimes', value: 'I_SMOKE_SOMETIMES' },
+  { label: 'Don\'t Smoke', value: 'I_DONT_SMOKE' },
+  { label: 'Trying to Quit', value: 'I_AM_TRYING_TO_QUIT' },
+];
 
   const handleComplete = () => {
   if (!selectedDrinking) {
@@ -126,7 +143,7 @@ export default function LifestyleScreen({navigation}) {
         {/* Progress Bar Area */}
         <View style={styles.progressContainer}>
           <View style={styles.progressTextRow}>
-            <Text style={styles.progressSub}>Step 4 of 8</Text>
+            <Text style={styles.progressSub}>Step 4 of 6</Text>
             <Text style={styles.progressPercent}>75%</Text>
           </View>
           <View style={styles.progressBarBackground}>
@@ -138,14 +155,17 @@ export default function LifestyleScreen({navigation}) {
         <Text style={styles.mainTitle}>Lifestyle and habits</Text>
         <Text style={styles.subTitle}>Share your habits</Text>
 
-        {/* --- Drinking Section --- */}
-        <Text style={styles.sectionHeading}>Drinking</Text>
+       {/* --- Drinking Section --- */}
+
+
+
+        {/* <Text style={styles.sectionHeading}>Drinking</Text>
         <View style={styles.chipGrid}>
           {drinkingOptions.map((option) => {
             const isSelected = selectedDrinking === option;
             return (
               <ChipButton
-                key={option}
+                key={option }
                 label={option}
                 onPress={() => setSelectedDrinking(option)}
                 icon={
@@ -164,7 +184,7 @@ export default function LifestyleScreen({navigation}) {
           })}
         </View>
 
-        {/* --- Smoking Section --- */}
+        
         <Text style={styles.sectionHeading}>Smoking</Text>
         <View style={styles.chipGrid}>
           {smokingOptions.map((option) => {
@@ -188,7 +208,61 @@ export default function LifestyleScreen({navigation}) {
               />
             );
           })}
-        </View>
+        </View> */}
+
+        {/* --- Drinking Section --- */}
+<Text style={styles.sectionHeading}>Drinking</Text>
+<View style={styles.chipGrid}>
+  {drinkingOptions.map((item) => {
+    const isSelected = selectedDrinking === item.value;
+    return (
+      <ChipButton
+        key={item.value}
+        label={item.label}
+        onPress={() => setSelectedDrinking(item.value)}
+        icon={
+          <FontAwesomeFreeSolid 
+            name={isSelected ? "check" : "plus"} 
+            size={16} 
+            color="#1b4d22" 
+          />
+        }
+        containerStyle={[
+          styles.customChip,
+          isSelected && styles.selectedChipBackground
+        ]}
+      />
+    );
+  })}
+</View>
+
+{/* --- Smoking Section --- */}
+<Text style={styles.sectionHeading}>Smoking</Text>
+<View style={styles.chipGrid}>
+  {smokingOptions.map((item) => {
+    const isSelected = selectedSmoking === item.value;
+    return (
+      <ChipButton
+        key={item.value}
+        label={item.label}
+        onPress={() => setSelectedSmoking(item.value)}
+        icon={
+          <FontAwesomeFreeSolid 
+            name={isSelected ? "check" : "plus"} 
+            size={16} 
+            color="#1b4d22" 
+          />
+        }
+        containerStyle={[
+          styles.customChip,
+          isSelected && styles.selectedChipBackground
+        ]}
+      />
+    );
+  })}
+</View>
+
+
 
         {/* --- Bottom Navigation Footer --- */}
         <View style={styles.footerRow}>

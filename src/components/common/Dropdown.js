@@ -22,6 +22,7 @@ const Dropdown = ({ label, placeholder, data, value, onSelect, error, style }) =
         containerStyle={styles.dropdownListContainer}
         itemContainerStyle={styles.optionItemContainer}
         itemTextStyle={styles.optionText}
+        dropdownPosition="bottom"
         selectedTextStyle={styles.valueText}
         placeholderStyle={styles.placeholderText}
         data={formattedData}
@@ -29,7 +30,7 @@ const Dropdown = ({ label, placeholder, data, value, onSelect, error, style }) =
         valueField="value"
         placeholder={placeholder || 'Select item'}
         value={value}
-        mode="default"
+        mode="auto"
         animation={true}
         onChange={(item) => {
           onSelect(item.value);
@@ -87,13 +88,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#0B5324',
     borderRadius: 12,
-    marginTop: 4,
-    maxHeight: 200,
-    elevation: 5,
+    marginTop: 0,
+    maxHeight: 250,
+    elevation: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    overflow: 'hidden',
   },
   optionItemContainer: {
     borderBottomWidth: 0.5,

@@ -26,10 +26,19 @@ const ProfessionalDetailsScreen = ({ navigation }) => {
   const dispatch = useAppDispatch()
   const existingUser = useAppSelector((state) => state.auth.user  ||  state.auth.userProfile);
 
-  const [occupation, setOccupation] = useState('Software Engineer');
+  const [occupation, setOccupation] = useState('');
   const [education, setEducation] = useState('');
   const [loading, setLoading] = useState(false);
-  const educationOptions = ['UNDERGRADUATE','GRADUATE','POSTGRADUATE','DOCTORATE','TRADE_SCHOOL','OTHER'];
+ // const educationOptions = ['UNDERGRADUATE','GRADUATE','POSTGRADUATE','DOCTORATE','TRADE_SCHOOL','OTHER'];
+
+ const educationOptions = [
+  { label: 'Undergraduate', value: 'UNDERGRADUATE' },
+  { label: 'Graduate', value: 'GRADUATE' },
+  { label: 'Postgraduate', value: 'POSTGRADUATE' },
+  { label: 'Doctorate', value: 'DOCTORATE' },
+  { label: 'Trade School', value: 'TRADE_SCHOOL' },
+  { label: 'Other', value: 'OTHER' },
+];
 
 
 //   const handleContinue = async () => {
@@ -111,7 +120,7 @@ const handleContinue = () => {
           {/* Progress Bar (Step 4 of 5 - 75%) */}
           <View style={styles.progressWrapper}>
             <View style={styles.progressTextRow}>
-              <Text style={styles.progressStepLabel}>Step 4 of 8</Text>
+              <Text style={styles.progressStepLabel}>Step 2 of 6</Text>
               <Text style={styles.progressPercentageMetric}>55%</Text>
             </View>
             <View style={styles.progressTrackBackground}>
@@ -140,26 +149,11 @@ const handleContinue = () => {
             </View>
 
             {/* Education Selector */}
-            <View style={styles.inputGroup}>
+            {/* <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
                 <FontAwesomeFreeSolid name="graduation-cap" size={16} color={COLORS.primary} />
                 <Text style={styles.inputLabel}>Education</Text>
               </View>
-
-              {/* <TouchableOpacity 
-                activeOpacity={0.9} 
-                onPress={() => console.log('Open Education Picker')}
-              >
-                <View pointerEvents="none">
-                  <Input
-                    placeholder="Select educational level"
-                    value={education}
-                    editable={false}
-                    style={styles.formFieldShadow}
-                    icon={<FontAwesomeFreeSolid name="chevron-down" size={14} color={COLORS.logoBg} />}
-                  />
-                </View>
-              </TouchableOpacity> */}
 
                <Dropdown
               //label="Education"
@@ -169,7 +163,23 @@ const handleContinue = () => {
               onSelect={(selectedValue) => setEducation(selectedValue)}
               style={styles.formFieldShadow}
             />
-            </View>
+            </View> */}
+
+            {/* Education Selector */}
+           <View style={styles.inputGroup}>
+             <View style={styles.labelRow}>
+               <FontAwesomeFreeSolid name="graduation-cap" size={16} color={COLORS.primary} />
+               <Text style={styles.inputLabel}>Education</Text>
+             </View>
+           
+             <Dropdown
+               placeholder="Select education"
+               data={educationOptions}
+               value={education}
+               onSelect={(selectedItem) => setEducation(selectedItem.value || selectedItem)}
+               style={styles.formFieldShadow}
+             />
+           </View>
 
            
 

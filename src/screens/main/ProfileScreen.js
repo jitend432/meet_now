@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import { 
   StyleSheet, 
   Text, 
@@ -13,13 +13,14 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-free-solid/static";
-import CardContainer from '../../components/chat/CardContainer';
+//import CardContainer from '../../components/chat/CardContainer';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { authApi } from '../../services/authApi';
 import { setUserProfile } from '../../redux/slices/authSlice';
+import { useFocusEffect } from '@react-navigation/native';
 
 
-import RohanAvatar from '../../assets/images/img.jpg';
+import RohanAvatar from '../../assets/images/user3.png';
 import { COLORS, FONTSIZE, SIZES } from '../../constants/theme';
 import { FONTS } from '../../constants/fonts';
 
@@ -32,7 +33,30 @@ const ProfileScreen = ({ navigation }) => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  // useEffect(() => {
+  //   const fetchUserProfile = async () => {
+  //     if (!registrationId) {
+  //       setLoading(false);
+  //       return;
+  //     }
+  //     try {
+  //       const res = await authApi.getMyProfile(registrationId);
+  //       const dynamicData = res.data || res;
+  //       setUserData(dynamicData);
+  //       dispatch(setUserProfile(dynamicData));
+  //     } catch (error) {
+  //       console.error("Profile Fetch Error:", error);
+  //       Alert.alert("Error", "Failed to load profile details.");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchUserProfile();
+  // }, [registrationId, dispatch]);
+
+  useFocusEffect(
+  useCallback(() => {
     const fetchUserProfile = async () => {
       if (!registrationId) {
         setLoading(false);
@@ -52,7 +76,8 @@ const ProfileScreen = ({ navigation }) => {
     };
 
     fetchUserProfile();
-  }, [registrationId]);
+  }, [registrationId, dispatch])
+);
 
   // Loading state skeleton replacement
   if (loading) {
@@ -116,20 +141,35 @@ const ProfileScreen = ({ navigation }) => {
             </View>
           </View>
 
-         
+          
 
+         
           {/* Section Section Divider Heading label */}
-          <Text style={styles.sectionDividerLabel}>Manage</Text>
+          {/* <Text style={styles.sectionDividerLabel}>Manage</Text> */}
 
           {/* Photos Management Subsection Card */}
+          {/* <View style={styles.infoCardBlock}>
+            <Text style={styles.cardSectionTitle}>Photos</Text>
+            <View style={styles.photoGalleryGrid}>
+              <Image source={ userData?.profilePhoto ? { uri: userData.otherPhotos } : RohanAvatar } style={styles.galleryThumbnail} />
+              
+            </View>
+          </View> */}
+
           <View style={styles.infoCardBlock}>
             <Text style={styles.cardSectionTitle}>Photos</Text>
             <View style={styles.photoGalleryGrid}>
-              <Image source={ userData?.profilePhoto ? { uri: userData.profilePhoto } : RohanAvatar } style={styles.galleryThumbnail} />
-              {/* <Image source={Photo1} style={styles.galleryThumbnail} />
-              <Image source={Photo2} style={styles.galleryThumbnail} />
-              <Image source={Photo3} style={styles.galleryThumbnail} /> */}
-              {/* <Image source={Photo4} style={styles.galleryThumbnail} /> */}
+              {userData?.otherPhotos && userData.otherPhotos.length > 0 ? (
+                userData.otherPhotos.map((photoUrl, index) => (
+                  <Image
+                    key={index}
+                    source={{ uri: photoUrl }}
+                    style={styles.galleryThumbnail}
+                  />
+                ))
+              ) : (
+                <Image source={RohanAvatar} style={styles.galleryThumbnail} />
+              )}
             </View>
           </View>
 
@@ -197,6 +237,21 @@ const ProfileScreen = ({ navigation }) => {
 
           </View>
 
+           {/* Premium Subscription Plan Banner Block */}
+          <View style={styles.subscriptionBanner}>
+            
+          <TouchableOpacity 
+                  style={styles.managePlanButton} 
+                  activeOpacity={0.8}
+                  onPress={() => Linking.openURL('https://vynkdating.com/plans')}
+                >
+                  <Text style={styles.managePlanButtonText}>Manage Plan</Text>
+                  <FontAwesomeFreeSolid name="chevron-right" size={10} color="#ffffff" />
+          </TouchableOpacity>
+
+          </View>
+
+
           {/* Interests Card Section */}
           <View style={styles.infoCardBlock}>
             <Text style={styles.cardSectionTitle}>Interests</Text>
@@ -247,7 +302,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   screenHeading: {
-    fontSize: 24,
+    fontSize: FONTSIZE.lg,
     //fontWeight: '800',
     color: '#265c32',
     fontFamily: FONTS.SEMIBOLD
@@ -342,7 +397,7 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.REGULAR
   },
   subscriptionBanner: {
-    backgroundColor: '#1b4322', // Darker evergreen luxury hue from image_a3c52d.png
+    backgroundColor: '#ffffff', 
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
@@ -457,14 +512,22 @@ const styles = StyleSheet.create({
   },
   photoGalleryGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    //justifyContent: 'space-between',
+    flexWrap: 'wrap',
+  gap: 8,
   },
+  // galleryThumbnail: {
+  //   width: '23%',
+  //   aspectRatio: 1,
+  //   borderRadius: 8,
+  //   backgroundColor: '#f5f5f5',
+  // },
+
   galleryThumbnail: {
-    width: '23%',
-    aspectRatio: 1,
-    borderRadius: 8,
-    backgroundColor: '#f5f5f5',
-  },
+  width: 100, // Aapke layout ke hisab se width/height
+  height: 100,
+  borderRadius: 8,
+},
   fieldBlock: {
     marginBottom: 14,
   },

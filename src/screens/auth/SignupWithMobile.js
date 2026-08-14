@@ -146,53 +146,18 @@ const handleRegister = async () => {
         <View style={styles.formSection}>
 
           <Input
-            label="Email Address"
-            placeholder="Enter your email address"
+            label="Mobile Number"
+            placeholder="Enter your Mobile Number"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
-            icon={<FontAwesomeFreeSolid name="envelope" size={18} color={COLORS.logoBg} />} // Note: fontawesome me envelope hota hai mail ke liye
+            icon={<FontAwesomeFreeSolid name="envelope" size={18} color={COLORS.logoBg} />} 
           />
 
-          {/* <Input
-            label="Password"
-            placeholder="Create a password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry={!showPassword} // 👈 Updated
-            icon={<FontAwesomeFreeSolid name="lock" size={18} color={COLORS.logoBg} />}
-            rightIcon={ // 👈 Added
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-              <FontAwesomeFreeSolid 
-                name={showPassword ? "eye-slash" : "eye"} 
-                size={18} 
-                color={COLORS.logoBg} 
-              />
-            </TouchableOpacity>
-          }
-          />
-
-          <Input
-            label="Confirm Password"
-            placeholder="Confirm your password"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            //secureTextEntry={true}
-            secureTextEntry={!showConfirmPassword} // 👈 Updated
-            icon={<FontAwesomeFreeSolid name="lock" size={18} color={COLORS.logoBg} />}
-            rightIcon={ // 👈 Added
-            <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-              <FontAwesomeFreeSolid 
-                name={showConfirmPassword ? "eye-slash" : "eye"} 
-                size={18} 
-                color={COLORS.logoBg} 
-              />
-            </TouchableOpacity>
-          }
-          /> */}
+         
 
           {/* Password Field */}
-<View style={styles.passwordWrapper}>
+ <View style={styles.passwordWrapper}>
   <Input
     label="Password"
     placeholder="Create a password"

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   Text,
@@ -8,38 +8,124 @@ import {
   Image,
   Dimensions,
   Alert,
+  Modal
 } from 'react-native';
 import { FontAwesomeFreeSolid } from '@react-native-vector-icons/fontawesome-free-solid/static';
 import DatePickerInput from '../../components/common/DatePickerInput';
-
 import { FONTS } from '../../constants/fonts';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
-//import { COLORS } from '../../constants/theme';
 import { COLORS } from '../../constants/theme';
-
-// Import authApi (Path apne project structure ke hisab se verify kar lena)
 import { authApi } from '../../services/authApi';
-import { useAppSelector } from '../../redux/hooks';
+import { useAppSelector, useAppDispatch } from '../../redux/hooks';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CustomModal } from '../../components/common/CustomModal';
+import { useFocusEffect } from '@react-navigation/native';
+import { setUserProfile } from '../../redux/slices/authSlice';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const THEME_GREEN = '#0B5324';
 
-// const [age, setAge] = useState(''); 
+const EditProfileScreen = ({ navigation }) => {
 
-const EditProfileScreen = ({ navigation, route }) => {
-  // Extract registrationId passed from route or default
-
+  const dispatch = useAppDispatch(); // 👈 Ye line add karo
+  const insets = useSafeAreaInsets();
   const registrationId = useAppSelector((state) => state.auth.userId )
+  const currentUser = useAppSelector((state) => state.auth.user)
   console.log("Edit profile regId ",registrationId)
+  
+
+
+  const [modalConfig, setModalConfig] = useState({
+  visible: false,
+  type: 'info',
+  title: '',
+  message: '',
+  buttons: [],
+});
+
+const closeModal = () => {
+  setModalConfig((prev) => ({ ...prev, visible: false }));
+};
+
+//   useFocusEffect(
+//   useCallback(() => {
+//   if (currentUser) {
+//     setProfileData({
+//       fullName: currentUser.fullName || '',
+//       gender: currentUser.gender || 'MALE',
+//       bio: currentUser.bio || '',
+//       occupation: currentUser.occupation || '',
+//       education: currentUser.education || 'UNDERGRADUATE',
+//       interests: currentUser.interests || [],
+//       drinkingHabit: currentUser.drinkingHabit || 'NO',
+//       smokingHabit: currentUser.smokingHabit || 'NO',
+//       hopingToFind: currentUser.hopingToFind || 'A_LONG_TERM_RELATIONSHIP',
+//       lookingFor: currentUser.lookingFor || 'EVERYONE',
+//       profilePhoto: currentUser.profilePhoto || [],
+//     });
+
+//     if (currentUser.dateOfBirth) {
+//       setAge(currentUser.dateOfBirth);
+//     }
+//   }
+// }, [currentUser])
+//   );
+
+useFocusEffect(
+    useCallback(() => {
+      const fetchAndSetData = async () => {
+        let data = currentUser;
+
+        // Agar Redux me user data nahi hai (Discover screen se aane par), API se mangwao
+        if (!data || !data.fullName) {
+          if (!registrationId) return;
+          try {
+            setIsLoading(true);
+            const res = await authApi.getMyProfile(registrationId);
+            data = res.data || res;
+            dispatch(setUserProfile(data));
+          } catch (err) {
+            console.error("Fetch profile error in Edit Screen:", err);
+            return;
+          } finally {
+            setIsLoading(false);
+          }
+        }
+
+        // Form fields fill karo
+        if (data) {
+          setProfileData({
+            fullName: data.fullName || '',
+            gender: data.gender || 'MALE',
+            bio: data.bio || '',
+            occupation: data.occupation || '',
+            education: data.education || 'UNDERGRADUATE',
+            interests: data.interests || [],
+            drinkingHabit: data.drinkingHabit || 'NO',
+            smokingHabit: data.smokingHabit || 'NO',
+            hopingToFind: data.hopingToFind || 'A_LONG_TERM_RELATIONSHIP',
+            lookingFor: data.lookingFor || 'EVERYONE',
+            profilePhoto: data.profilePhoto || '',
+          });
+
+          if (data.dateOfBirth) {
+            setAge(data.dateOfBirth);
+          }
+        }
+      };
+
+      fetchAndSetData();
+    }, [currentUser, registrationId, dispatch])
+  );
+
+
 
   const [profileData, setProfileData] = useState({
-    fullName: 'Jitendra Pratap',
+    fullName: '',
     gender: 'MALE',
-    //age: '2002-08-08',
     bio: 'Tech enthusiast who loves travelling and photography.',
-    occupation: 'Software Engineer',
-    //height: "5'10\"",
+    occupation: '',
     education: 'UNDERGRADUATE',
     interests: ['TRAVEL', 'MUSIC', 'MOVIES', 'SPORTS'],
     drinkingHabit: 'YES',
@@ -61,86 +147,7 @@ const EditProfileScreen = ({ navigation, route }) => {
     setProfileData((prev) => ({ ...prev, [key]: value }));
   };
 
-  // const onSave = async () => {
-  //   try {
-  //     setIsLoading(true);
-
-  //     const payload = {
-  //       fullName: profileData.fullName,
-  //       gender: profileData.gender,
-  //       dateOfBirth: age || '2002-08-08',
-  //       bio: profileData.bio,
-  //       occupation: profileData.occupation,
-  //       //height: profileData.height,
-  //       education: profileData.education,
-  //       interests: profileData.interests,
-  //       drinkingHabit: profileData.drinkingHabit,
-  //       smokingHabit: profileData.smokingHabit,
-  //       hopingToFind: profileData.hopingToFind,
-  //       lookingFor: profileData.lookingFor,
-  //     };
-
-  //     // Direct call to authApi.updateProfile
-  //     const response = await authApi.updateProfile(registrationId, payload);
-      
-  //     Alert.alert('Success', 'Profile updated successfully!', [
-  //       { text: 'OK', onPress: () => navigation.navigate('ProfileScreen') }
-  //     ]);
-  //   } catch (error) {
-  //     console.error('Update Profile Error:', error);
-  //     Alert.alert(
-  //       'Error',
-  //       error?.response?.data?.message || error?.message || 'Failed to update profile.'
-  //     );
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
-
-//     const onSave = async () => {
-//   try {
-//     setIsLoading(true);
-
-//     const payload = {
-//       fullName: profileData.fullName,
-//       gender: profileData.gender,
-//       dateOfBirth: age || '2002-08-08',
-//       bio: profileData.bio,
-//       occupation: profileData.occupation,
-//       education: profileData.education,
-//       interests: profileData.interests,
-//       drinkingHabit: profileData.drinkingHabit,
-//       smokingHabit: profileData.smokingHabit,
-//       hopingToFind: profileData.hopingToFind,
-//       lookingFor: profileData.lookingFor,
-//     };
-
-//     console.log("👉 PAYLOAD BEING SENT:", payload);
-
-//     // API call ka response variable mein capture karein
-//     const response = await authApi.updateProfile(registrationId, payload);
-    
-//     // Yahan terminal/console mein response dekhein
-//     console.log("✅ API RESPONSE RECEIVED:", JSON.stringify(response, null, 2));
-
-//     Alert.alert('Success', 'Profile updated successfully!', [
-//       { text: 'OK', onPress: () => navigation.navigate('ProfileScreen') }
-//     ]);
-//   } catch (error) {
-//     console.error('❌ Update Profile Error:', error);
-//     // Error object ka detailed response print karein
-//     console.log('❌ ERROR RESPONSE DATA:', error?.response?.data);
-    
-//     Alert.alert(
-//       'Error',
-//       error?.response?.data?.message || error?.message || 'Failed to update profile.'
-//     );
-//   } finally {
-//     setIsLoading(false);
-//   }
-// };
-
+  
 const onSave = async () => {
   try {
     setIsLoading(true);
@@ -161,22 +168,50 @@ const onSave = async () => {
 
     console.log("👉 PAYLOAD BEING SENT:", payload);
 
-    // Call update API
     const response = await authApi.updateProfile(registrationId, payload);
     
     console.log("✅ API RESPONSE RECEIVED:", response);
 
-    Alert.alert('Success', 'Profile updated successfully!', [
-      { text: 'OK', onPress: () => navigation.navigate('ProfileScreen') }
-    ]);
+    // Alert.alert('Success', 'Profile updated successfully!', [
+    //   { text: 'OK', onPress: () => navigation.goBack() }
+    // ]);
+    setModalConfig({
+      visible: true,
+      type: 'success',
+      title: 'Success',
+      message: 'Profile updated successfully!',
+      buttons: [
+        {
+          text: 'OK',
+          onPress: () => {
+            closeModal();
+            navigation.goBack();
+          },
+        },
+      ],
+    });
   } catch (error) {
     console.error('❌ Update Profile Error:', error);
     console.log('❌ ERROR RESPONSE DATA:', error?.response?.data);
 
-    Alert.alert(
-      'Error',
-      error?.response?.data?.message || error?.message || 'Failed to update profile.'
-    );
+    // Alert.alert(
+    //   'Error',
+    //   error?.response?.data?.message || error?.message || 'Failed to update profile.'
+    // );
+
+    setModalConfig({
+      visible: true,
+      type: 'error',
+      title: 'Error',
+      message: error?.response?.data?.message || error?.message || 'Failed to update profile.',
+      buttons: [
+        {
+          text: 'OK',
+          onPress: closeModal,
+        },
+      ],
+    });
+
   } finally {
     setIsLoading(false);
   }
@@ -192,11 +227,65 @@ const onSave = async () => {
 
   const PHOTO_SIZE = (SCREEN_WIDTH - 64) / 5;
 
+
+
+  const ALL_INTERESTS = [
+  { label: 'Travel', value: 'TRAVEL' },
+  { label: 'Music', value: 'MUSIC' },
+  { label: 'Movies', value: 'MOVIES' },
+  { label: 'Fitness', value: 'FITNESS' },
+  { label: 'Sports', value: 'SPORTS' },
+  { label: 'Cricket', value: 'CRICKET' },
+  { label: 'Football', value: 'FOOTBALL' },
+  { label: 'Basketball', value: 'BASKETBALL' },
+  { label: 'Reading', value: 'READING' },
+  { label: 'Gaming', value: 'GAMING' },
+  { label: 'Cooking', value: 'COOKING' },
+  { label: 'Photography', value: 'PHOTOGRAPHY' },
+  { label: 'Dancing', value: 'DANCING' },
+  { label: 'Hiking', value: 'HIKING' },
+  { label: 'Camping', value: 'CAMPING' },
+  { label: 'Swimming', value: 'SWIMMING' },
+  { label: 'Cycling', value: 'CYCLING' },
+  { label: 'Yoga', value: 'YOGA' },
+  { label: 'Art', value: 'ART' },
+  { label: 'Fashion', value: 'FASHION' },
+  { label: 'Technology', value: 'TECHNOLOGY' },
+  { label: 'Pets', value: 'PETS' },
+  { label: 'Food', value: 'FOOD' },
+  { label: 'Writing', value: 'WRITING' },
+  { label: 'Volunteering', value: 'VOLUNTEERING' },
+  { label: 'Entrepreneurship', value: 'ENTREPRENEURSHIP' },
+  { label: 'Investing', value: 'INVESTING' },
+  { label: 'Anime', value: 'ANIME' },
+  { label: 'Concerts', value: 'CONCERTS' },
+  { label: 'Nightlife', value: 'NIGHTLIFE' },
+];
+
+// Component ke andar state & handlers:
+const [isInterestModalVisible, setIsInterestModalVisible] = useState(false);
+
+const toggleInterest = (val) => {
+  setProfileData((prev) => {
+    const exists = prev.interests.includes(val);
+    const updated = exists
+      ? prev.interests.filter((i) => i !== val)
+      : [...prev.interests, val];
+    return { ...prev, interests: updated };
+  });
+};
+
+const getInterestLabel = (val) => {
+  const found = ALL_INTERESTS.find((i) => i.value === val);
+  return found ? found.label : val;
+};
+
   return (
-    <View style={styles.mainContainer}>
+    // <View style={styles.mainContainer}>
+    <View style={[styles.mainContainer, { paddingTop: insets.top }]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.headerIconButton} onPress={() => navigation.navigate('ProfileScreen')}>
+        <TouchableOpacity style={styles.headerIconButton} onPress={() => navigation.goBack()}>
           <FontAwesomeFreeSolid name="arrow-left" size={18} color={THEME_GREEN} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Edit Profile</Text>
@@ -208,8 +297,24 @@ const onSave = async () => {
         {/* Profile Photo */}
         <View style={styles.photoSection}>
           <View style={styles.avatarContainer}>
-            <Image source={{ uri: profileData.images[0]?.uri }} style={styles.mainAvatar} />
-            <TouchableOpacity style={styles.editBadge}>
+            {/* <Image source={{ uri: profileData.images[0]?.uri }} style={styles.mainAvatar} /> */}
+
+            {/* <Image 
+       source={{ 
+         uri: profileData.profilePhoto
+       }} 
+       style={styles.mainAvatar} 
+     /> */}
+
+     <Image 
+  source={
+    profileData.profilePhoto && typeof profileData.profilePhoto === 'string'
+      ? { uri: profileData.profilePhoto }
+      : require('../../assets/images/user3.png')
+  } 
+  style={styles.mainAvatar} 
+/>
+             <TouchableOpacity style={styles.editBadge}>
               <FontAwesomeFreeSolid name="pen" size={10} color="#FFF" />
             </TouchableOpacity>
           </View>
@@ -252,22 +357,14 @@ const onSave = async () => {
         </View>
 
         {/* 3. Date of Birth */}
-        {/* <Input
-          label="Date of Birth"
-          value={profileData.dateOfBirth}
-          placeholder="YYYY-MM-DD"
-          onChangeText={(text) => handleUpdate('dateOfBirth', text)}
-          icon={<FontAwesomeFreeSolid name="calendar-days" size={18} color={THEME_GREEN} />}
-        /> */}
-
-        <DatePickerInput
+        {/* <DatePickerInput
            label="Date of Birth"
            placeholder="Select date of birth"
            value={age}
            onSelectDate={setAge}
            icon={<FontAwesomeFreeSolid name="calendar-alt" size={18} color={COLORS.logoBg} />}
            style={styles.formFieldShadow}
-         />
+         /> */}
 
         {/* 4. Bio */}
         <View style={styles.sectionContainer}>
@@ -309,7 +406,7 @@ const onSave = async () => {
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionLabel}>Education</Text>
           <View style={styles.optionsRow}>
-            {['HIGH_SCHOOL', 'UNDERGRADUATE', 'POSTGRADUATE'].map((edu) => {
+            {[ 'UNDERGRADUATE','GRADUATE', 'POSTGRADUATE', 'DOCTORATE','TRADE_SCHOOL','OTHER'].map((edu) => {
               const isSelected = profileData.education === edu;
               return (
                 <TouchableOpacity
@@ -328,7 +425,7 @@ const onSave = async () => {
         </View>
 
         {/* 8. Interests */}
-        <View style={styles.sectionContainer}>
+        {/* <View style={styles.sectionContainer}>
           <Text style={styles.sectionLabel}>Interests</Text>
           <View style={styles.chipsContainer}>
             {profileData.interests.map((interest) => (
@@ -343,7 +440,84 @@ const onSave = async () => {
               <Text style={styles.addMoreText}>+ Add More</Text>
             </TouchableOpacity>
           </View>
+        </View> */}
+
+
+        <View style={styles.sectionContainer}>
+  <Text style={styles.sectionLabel}>Interests</Text>
+  <View style={styles.chipsContainer}>
+    {profileData.interests.map((interest) => (
+      <View key={interest} style={styles.interestChip}>
+        <Text style={styles.interestText}>{getInterestLabel(interest)}</Text>
+        <TouchableOpacity onPress={() => removeInterest(interest)}>
+          <FontAwesomeFreeSolid name="xmark" size={12} color="#FFF" />
+        </TouchableOpacity>
+      </View>
+    ))}
+    <TouchableOpacity
+      style={styles.addMoreButton}
+      onPress={() => setIsInterestModalVisible(true)}
+    >
+      <Text style={styles.addMoreText}>+ Add More</Text>
+    </TouchableOpacity>
+  </View>
+
+  {/* Select Interests Modal */}
+  <Modal
+    visible={isInterestModalVisible}
+    animationType="slide"
+    transparent={true}
+    onRequestClose={() => setIsInterestModalVisible(false)}
+  >
+    <View style={styles.modalOverlay}>
+      <View style={styles.modalContainer}>
+        <View style={styles.modalHeader}>
+          <Text style={styles.modalTitle}>Select Interests</Text>
+          <TouchableOpacity onPress={() => setIsInterestModalVisible(false)}>
+            <FontAwesomeFreeSolid name="xmark" size={18} color="#333" />
+          </TouchableOpacity>
         </View>
+
+        <ScrollView contentContainerStyle={styles.modalChipGrid}>
+          {ALL_INTERESTS.map((item) => {
+            const isSelected = profileData.interests.includes(item.value);
+            return (
+              <TouchableOpacity
+                key={item.value}
+                onPress={() => toggleInterest(item.value)}
+                style={[
+                  styles.optionChip,
+                  isSelected && styles.optionChipSelected,
+                ]}
+              >
+                <FontAwesomeFreeSolid
+                  name={isSelected ? "check" : "plus"}
+                  size={12}
+                  color={isSelected ? '#FFF' : THEME_GREEN}
+                />
+                <Text
+                  style={[
+                    styles.optionText,
+                    isSelected && styles.optionTextSelected,
+                  ]}
+                >
+                  {item.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
+        <TouchableOpacity
+          style={styles.modalDoneButton}
+          onPress={() => setIsInterestModalVisible(false)}
+        >
+          <Text style={styles.modalDoneText}>Done</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </Modal>
+</View>
 
         {/* Photos List */}
         {/* <View style={styles.sectionContainer}>
@@ -366,7 +540,7 @@ const onSave = async () => {
         </View> */}
 
         {/* 9. Drinking Habit */}
-        <View style={styles.sectionContainer}>
+        {/* <View style={styles.sectionContainer}>
           <Text style={styles.sectionLabel}>Drinking Habit</Text>
           <View style={styles.optionsRow}>
             {['YES', 'NO', 'SOMETIMES'].map((habit) => {
@@ -383,10 +557,44 @@ const onSave = async () => {
               );
             })}
           </View>
-        </View>
+        </View> */}
+
+        {/* 9. Drinking Habit */}
+<View style={styles.sectionContainer}>
+  <Text style={styles.sectionLabel}>Drinking Habit</Text>
+  <View style={styles.optionsRow}>
+    {[
+      { label: 'Yes', value: 'YES' },
+      { label: 'I Drink', value: 'I_DRINK' },
+      { label: 'Drink Sometimes', value: 'I_DRINK_SOMETIMES' },
+      { label: 'Rarely Drink', value: 'I_RARELY_DRINK' },
+      { label: 'No', value: 'NO' },
+      { label: "I Don't Drink", value: 'I_DONT_DRINK' },
+      { label: 'Sober', value: 'I_AM_SOBER' },
+    ].map((habit) => {
+      const isSelected = profileData.drinkingHabit === habit.value;
+      return (
+        <TouchableOpacity
+          key={habit.value}
+          onPress={() => handleUpdate('drinkingHabit', habit.value)}
+          style={[styles.optionChip, isSelected && styles.optionChipSelected]}
+        >
+          <FontAwesomeFreeSolid 
+            name="wine-glass" 
+            size={14} 
+            color={isSelected ? '#FFF' : THEME_GREEN} 
+          />
+          <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>
+            {habit.label}
+          </Text>
+        </TouchableOpacity>
+      );
+    })}
+  </View>
+</View>
 
         {/* 10. Smoking Habit */}
-        <View style={styles.sectionContainer}>
+        {/* <View style={styles.sectionContainer}>
           <Text style={styles.sectionLabel}>Smoking Habit</Text>
           <View style={styles.optionsRow}>
             {[
@@ -407,10 +615,36 @@ const onSave = async () => {
               );
             })}
           </View>
-        </View>
+        </View> */}
+
+        <View style={styles.sectionContainer}>
+  <Text style={styles.sectionLabel}>Smoking Habit</Text>
+  <View style={styles.optionsRow}>
+    {[
+      { label: 'Yes', value: 'YES' },
+      { label: 'I Smoke', value: 'I_SMOKE' },
+      { label: 'Smoke Sometimes', value: 'I_SMOKE_SOMETIMES' },
+      { label: 'No', value: 'NO' },
+      { label: "I Don't Smoke", value: 'I_DONT_SMOKE' },
+      { label: 'Trying to Quit', value: 'I_AM_TRYING_TO_QUIT' },
+    ].map((habit) => {
+      const isSelected = profileData.smokingHabit === habit.value;
+      return (
+        <TouchableOpacity
+          key={habit.value}
+          onPress={() => handleUpdate('smokingHabit', habit.value)}
+          style={[styles.optionChip, isSelected && styles.optionChipSelected]}
+        >
+          <FontAwesomeFreeSolid name="smoking" size={14} color={isSelected ? '#FFF' : THEME_GREEN} />
+          <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>{habit.label}</Text>
+        </TouchableOpacity>
+      );
+    })}
+  </View>
+</View>
 
         {/* 11. Hoping to Find */}
-        <View style={styles.sectionContainer}>
+        {/* <View style={styles.sectionContainer}>
           <Text style={styles.sectionLabel}>Hoping to Find</Text>
           <View style={styles.optionsRow}>
             {[
@@ -431,7 +665,33 @@ const onSave = async () => {
               );
             })}
           </View>
-        </View>
+        </View> */}
+
+        <View style={styles.sectionContainer}>
+  <Text style={styles.sectionLabel}>Hoping to Find</Text>
+  <View style={styles.optionsRow}>
+    {[
+      { label: 'Long Term Relationship', value: 'A_LONG_TERM_RELATIONSHIP' },
+      { label: 'Life Partner', value: 'A_LIFE_PARTNER' },
+      { label: 'Open to Seeing', value: 'OPEN_TO_SEEING_WHERE_THINGS_GO' },
+      { label: 'Something Casual', value: 'SOMETHING_CASUAL' },
+      { label: 'Marriage', value: 'MARRIAGE' },
+      { label: 'Ethical Non-Monogamy', value: 'ETHICAL_NON_MONOGAMY' },
+    ].map((item) => {
+      const isSelected = profileData.hopingToFind === item.value;
+      return (
+        <TouchableOpacity
+          key={item.value}
+          onPress={() => handleUpdate('hopingToFind', item.value)}
+          style={[styles.optionChip, isSelected && styles.optionChipSelected]}
+        >
+          <FontAwesomeFreeSolid name="heart" size={14} color={isSelected ? '#FFF' : THEME_GREEN} />
+          <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>{item.label}</Text>
+        </TouchableOpacity>
+      );
+    })}
+  </View>
+</View>
 
         {/* 12. Looking For */}
         <View style={styles.sectionContainer}>
@@ -440,7 +700,7 @@ const onSave = async () => {
             {[
               { label: 'Men', value: 'MEN' },
               { label: 'Women', value: 'WOMEN' },
-              { label: 'Everyone', value: 'EVERYONE' },
+              { label: 'Other', value: 'OTHER' },
             ].map((item) => {
               const isSelected = profileData.lookingFor === item.value;
               return (
@@ -460,7 +720,7 @@ const onSave = async () => {
         {/* Buttons inside ScrollView at the end */}
         <View style={styles.inlineButtonContainer}>
           <View style={styles.buttonWrapper}>
-            <Button title="Cancel" variant="cancel" onPress={() => navigation.navigate('ProfileScreen')} />
+            <Button title="Cancel" variant="cancel" onPress={() => navigation.goBack()} />
           </View>
           <View style={styles.buttonWrapper}>
             <Button title="Save Changes" variant="primary" loading={isLoading} onPress={onSave} />
@@ -468,6 +728,14 @@ const onSave = async () => {
         </View>
 
       </ScrollView>
+      <CustomModal
+        visible={modalConfig.visible}
+        type={modalConfig.type}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        buttons={modalConfig.buttons}
+        onClose={closeModal}
+      />
     </View>
   );
 };
@@ -687,5 +955,47 @@ const styles = StyleSheet.create({
   },
   buttonWrapper: {
     flex: 1,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContainer: {
+    backgroundColor: '#FFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: THEME_GREEN,
+  },
+  modalChipGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    paddingBottom: 16,
+  },
+  modalDoneButton: {
+    backgroundColor: THEME_GREEN,
+    paddingVertical: 12,
+    borderRadius: 25,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  modalDoneText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });

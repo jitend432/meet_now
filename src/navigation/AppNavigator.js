@@ -108,7 +108,7 @@ useEffect(() => {
         <Stack.Screen name='DeleteAccountScreen' component={DeleteAccountScreen} options={{ headerShown: false }}/> 
         <Stack.Screen name='EditProfileScreen' component={EditProfileScreen} options={{ headerShown: false }}/> 
         <Stack.Screen name='AddPhotosScreen' component={AddPhotosScreen} options={{ headerShown: false}}/>
-        <Stack.Screen name='ProfileScreen' component={ProfileScreen} options={{ headerShown: false}}/>
+        {/* <Stack.Screen name='ProfileScreen' component={ProfileScreen} options={{ headerShown: false}}/> */}
 
         </>
         )}

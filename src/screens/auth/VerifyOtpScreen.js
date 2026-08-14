@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   StyleSheet, 
   Text, 
@@ -24,6 +24,24 @@ const VerifyOtpScreen = ({ navigation, route }) => {
   const [resendLoading, setResendLoading] = useState(false);
   const inputRefs = useRef([]);
   const dispatch = useAppDispatch()
+
+  const [timeLeft, setTimeLeft] = useState(300); // 300 seconds = 5 minutes
+
+   useEffect(() => {
+     if (timeLeft <= 0) return;
+   
+     const timerId = setInterval(() => {
+       setTimeLeft((prevTime) => prevTime - 1);
+     }, 1000);
+   
+     return () => clearInterval(timerId);
+   }, [timeLeft]);
+   
+   const formatTime = (seconds) => {
+     const mins = Math.floor(seconds / 60);
+     const secs = seconds % 60;
+     return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+   };
 
 
   const handleOtpChange = (value, index) => {
@@ -92,6 +110,8 @@ const VerifyOtpScreen = ({ navigation, route }) => {
       if (response) {
         Alert.alert('Success', 'A fresh verification code has been dispatched to your inbox.');
         setOtp(['', '', '', '', '', '']);
+        // 🟢 Resend success hone par timer 5 minutes (300 seconds) par reset hoga
+        setTimeLeft(300);
         if (inputRefs.current[0]) inputRefs.current[0].focus();
       }
     } catch (error) {
@@ -139,10 +159,24 @@ const VerifyOtpScreen = ({ navigation, route }) => {
             ))}
           </View>
 
-          <View style={styles.timerBanner}>
+          {/* <View style={styles.timerBanner}>
             <FontAwesomeFreeSolid name="clock" size={16} color={COLORS.primary} style={styles.timerIcon} />
             <Text style={styles.timerText}>Code expires in 05:00</Text>
-          </View>
+          </View> */}
+
+          <View style={styles.timerBanner}>
+         <FontAwesomeFreeSolid 
+           name="clock" 
+           size={16} 
+           color={timeLeft > 0 ? COLORS.primary : '#D32F2F'} 
+           style={styles.timerIcon} 
+         />
+         <Text style={[styles.timerText, timeLeft === 0 && styles.expiredText]}>
+           {timeLeft > 0 
+             ? `Code expires in ${formatTime(timeLeft)}` 
+             : 'Code expired! Please request a new one.'}
+         </Text>
+       </View>
 
           <Button 
             title="Verify Email" 
@@ -288,4 +322,9 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     textDecorationLine: 'underline',
   },
+
+  expiredText: {
+  color: '#D32F2F', 
+  fontWeight: '600',
+},
 });
