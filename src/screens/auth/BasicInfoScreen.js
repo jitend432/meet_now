@@ -22,6 +22,7 @@ import { CustomModal } from '../../components/common/CustomModal';
 
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { updateProfileDraft } from '../../redux/slices/authSlice';
+import { FONTS } from '../../constants/fonts';
 //import Geolocation from 'react-native-geolocation-service';
 //import { requestLocationPermission } from '../../utils/locationPermission';
 
@@ -54,6 +55,48 @@ const closeModal = () => {
   const [loading, setLoading] = useState(false);
 
   const genderOptions = ['MALE', 'FEMALE', 'OTHER'];
+
+  // 1. Height array generate karein (4'0" se 7'0" tak)
+const heightOptions = [
+  "4'0\" (122 cm)",
+  "4'1\" (124 cm)",
+  "4'2\" (127 cm)",
+  "4'3\" (130 cm)",
+  "4'4\" (132 cm)",
+  "4'5\" (135 cm)",
+  "4'6\" (137 cm)",
+  "4'7\" (140 cm)",
+  "4'8\" (142 cm)",
+  "4'9\" (145 cm)",
+  "4'10\" (147 cm)",
+  "4'11\" (150 cm)",
+  "5'0\" (152 cm)",
+  "5'1\" (155 cm)",
+  "5'2\" (157 cm)",
+  "5'3\" (160 cm)",
+  "5'4\" (163 cm)",
+  "5'5\" (165 cm)",
+  "5'6\" (168 cm)",
+  "5'7\" (170 cm)",
+  "5'8\" (173 cm)",
+  "5'9\" (175 cm)",
+  "5'10\" (178 cm)",
+  "5'11\" (180 cm)",
+  "6'0\" (183 cm)",
+  "6'1\" (185 cm)",
+  "6'2\" (188 cm)",
+  "6'3\" (191 cm)",
+  "6'4\" (193 cm)",
+  "6'5\" (196 cm)",
+  "6'6\" (198 cm)",
+  "6'7\" (201 cm)",
+  "6'8\" (203 cm)",
+  "6'9\" (206 cm)",
+  "6'10\" (208 cm)",
+  "6'11\" (211 cm)",
+  "7'0\" (213 cm)",
+];
+const [height, setHeight] = useState('');
 
  
 // const handleContinue = async () => {
@@ -95,9 +138,28 @@ const closeModal = () => {
 //     }
 //   };
 
+// 1. Clean real-time word counter
+const currentWordCount = aboutMe.trim().length > 0 
+  ? aboutMe.trim().split(/\s+/).filter(Boolean).length 
+  : 0;
+
+
+const handleAboutMeChange = (text) => {
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  
+  // Agar word count 100 ke andar hai ya user delete (backspace) kar raha hai
+  if (words.length <= 100) {
+    setAboutMe(text);
+  } else {
+    // Agar user bada text paste kar de toh sirf pehle 100 words hi allow karein
+    const trimmedTo100Words = text.split(/\s+/).slice(0, 100).join(' ');
+    setAboutMe(trimmedTo100Words);
+  }
+};
+
 const handleContinue = () => {
-  if (!age || !gender || !aboutMe || !fullName ) {
-    //Alert.alert('Validation Error', 'Please fill all mandatory fields.');
+  if (!age || !gender || !height || !aboutMe.trim() || !fullName.trim() ) {
+    
     setModalConfig({
       visible: true,
       type: 'warning',
@@ -107,11 +169,23 @@ const handleContinue = () => {
     return;
   }
 
+ // 2. Character Length Validation Check (Safety guard)
+  if (aboutMe.length > 100) {
+    setModalConfig({
+      visible: true,
+      type: 'warning',
+      title: 'Validation Error',
+      message: 'About me cannot exceed 100 characters.',
+    });
+    return;
+  }
+
   const basicInfoPayload = {
     dateOfBirth: age,
     gender: gender, 
-    bio: aboutMe,     
-    fullName: fullName
+    height: height,
+    bio: aboutMe.trim(),     
+    fullName: fullName.trim()
   };
 
   console.log("Saving Basic Info to Redux Profile Draft:", basicInfoPayload);
@@ -123,15 +197,17 @@ const handleContinue = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+
       <KeyboardAvoidingView 
     style={{ flex: 1 }} 
-    behavior={Platform.OS === 'android' ? 'height' : 'padding'}
+    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
   >
       <ScrollView 
         contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
+        showsVerticalScrollIndicator={true}
         keyboardShouldPersistTaps="handled" 
         automaticallyAdjustKeyboardInsets={true}
+        nestedScrollEnabled={true}
       >
                
         <View style={styles.cardWrapper}>
@@ -176,15 +252,6 @@ const handleContinue = () => {
               style={styles.formFieldShadow}
             />
 
-            {/* <Input
-              label="Age"
-              placeholder="Enter your age"
-              value={age}
-              onChangeText={setAge}
-              keyboardType="number-pad"
-              style={styles.formFieldShadow}
-            /> */}
-
             <DatePickerInput
              label="Date of Birth"
              placeholder="Select date of birth"
@@ -194,22 +261,15 @@ const handleContinue = () => {
              style={styles.formFieldShadow}
            />
 
-            {/* Gender Selector - Dropdown UI Action Wrap */}
-            {/* <TouchableOpacity 
-              activeOpacity={0.9} 
-              onPress={() => console.log('Open Gender Dropdown / Picker Sheet')}
-            >
-              <View pointerEvents="none">
-                <Input
-                  label="Gender"
-                  placeholder="Select gender"
-                  value={gender}
-                  editable={true}
-                  style={styles.formFieldShadow}
-                  icon={<FontAwesomeFreeSolid name="chevron-down" size={14} color={COLORS.logoBg} />}
-                />
-              </View>
-            </TouchableOpacity> */}
+             <Dropdown
+              label="Height"
+              placeholder="Select your height"
+              data={heightOptions}
+              value={height}
+              onSelect={(selectedHeight) => setHeight(selectedHeight)}
+              // style={styles.formFieldShadow}
+              style={[styles.formFieldShadow, { zIndex: 1000 }]}
+            />
 
             {/* Reusable Dropdown for Gender */}
             <Dropdown
@@ -218,10 +278,11 @@ const handleContinue = () => {
               data={genderOptions}
               value={gender}
               onSelect={(selectedValue) => setGender(selectedValue)}
-              style={styles.formFieldShadow}
+              // style={styles.formFieldShadow}
+              style={[styles.formFieldShadow, { zIndex: 1000 }]}
             />
 
-            <Input
+            {/* <Input
               label="About me"
               placeholder="Tell us about yourself..."
               value={aboutMe}
@@ -230,7 +291,24 @@ const handleContinue = () => {
               numberOfLines={4}
               inputStyle={styles.textAreaHeight}
               style={styles.formFieldShadow}
-            />
+            /> */}
+
+           <View style={{ width: '100%' }}>
+             <Input
+               label="About me"
+               placeholder="Tell us about yourself..."
+               value={aboutMe}
+               onChangeText={setAboutMe}
+               maxLength={100}
+               multiline={true}
+               numberOfLines={3}
+               inputStyle={styles.textAreaHeight}
+               style={styles.formFieldShadow}
+             />
+             <Text style={[styles.counterText, aboutMe.length >= 100 && { color: '#FF3333' }]}>
+               {aboutMe.length}/100
+             </Text>
+           </View>
 
             <View style={styles.navigationControlRow}>
               <TouchableOpacity 
@@ -277,7 +355,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: 16,
     paddingVertical: 20,
-    justifyContent: 'center',
+    //justifyContent: 'center',
   },
   cardWrapper: {
     backgroundColor: COLORS.background, 
@@ -285,8 +363,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 24,
     height:'auto',
-    
-    // Drop shadow configuration separating the container view layer
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
@@ -358,9 +434,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   textAreaHeight: {
-    height: 100,
+    //height: 100,
     textAlignVertical: 'top', 
     paddingTop: 12,
+    minHeight: 120
   },
   navigationControlRow: {
     flexDirection: 'row',
@@ -388,4 +465,13 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  counterText: {
+  fontSize: 12,
+  color: '#666666',
+  textAlign: 'right',
+  marginTop: -10,
+  marginBottom: 16,
+  marginRight: 4,
+  fontFamily: FONTS.REGULAR
+},
 });

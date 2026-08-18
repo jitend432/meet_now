@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   StyleSheet, Text, View, TextInput, TouchableOpacity, Image, FlatList,
-  KeyboardAvoidingView, Platform, Modal, TouchableWithoutFeedback, ActivityIndicator, Alert
+  KeyboardAvoidingView, Platform, Modal, TouchableWithoutFeedback, ActivityIndicator, Alert, StatusBar
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-free-solid/static";
@@ -374,7 +374,16 @@ const handlePickMedia = async () => {
       setIsSuccessState(false);
       setDialogVisible(true);
     } else if (id === 'profile') {
-     navigation.navigate('ViewProfileScreen', { user: { name: displayUserName, age: targetUser.age || 24, location: "Mumbai, India" } });
+      // 🔍 Target user ka complete data check karne ke liye logs:
+    console.log("👉 TARGET USER RAW DATA:", JSON.stringify(targetUser, null, 2));
+    console.log("👉 TARGET USER KEYS:", targetUser ? Object.keys(targetUser) : 'null');
+
+    // Navigation trigger
+    navigation.navigate('ViewProfileScreen', { 
+      user: targetUser, // 👈 direct pura object pass karke dekhein
+      userId: targetUser?.id || targetUser?.userId || targetUser?._id 
+    });
+     //navigation.navigate('ViewProfileScreen', { user: { name: displayUserName, age: targetUser.age || 24, location: "Mumbai, India" } });
      //navigation.navigate('ViewProfileScreen',{userId})
     // } else if (id === 'media' || id === 'mediaPhotos') {
     //   navigation.navigate('MediaPhotosScreen', { user: { name: displayUserName } });
@@ -646,17 +655,36 @@ const handlePickMedia = async () => {
           
           <View style={styles.navbarContainer}>
             <View style={styles.navLeftSection}>
+
               <TouchableOpacity onPress={() => navigation?.goBack()} activeOpacity={0.7}>
                 <FontAwesomeFreeSolid name="arrow-left" size={18} color="#757575" style={styles.backArrow} />
               </TouchableOpacity>
+
+              {/* 2. 👇 Clickable Profile Header (Avatar + Name) */}
+    <TouchableOpacity 
+      style={styles.profileClickableArea}
+      activeOpacity={0.7}
+      onPress={() => {
+        navigation.navigate('ViewProfileScreen', {
+          userId: targetUser?.userId || targetUser?.id || receiverId,
+          user: targetUser,
+        });
+      }}
+    >
               <View style={styles.avatarWrapper}>
                 <Image source={imageSource} style={styles.avatarImage} />
                 {status === "Connected" && <View style={styles.onlineBadge} />}
               </View>
+
               <View style={styles.userInfo}>
-                <Text style={styles.userName}>{displayUserName}</Text>
+                <Text style={styles.userName} numberOfLines={1} ellipsizeMode="tail">
+                  {displayUserName}
+                  </Text>
                 <Text style={styles.userStatus}>{status}</Text>
               </View>
+              </TouchableOpacity>
+
+
             </View>
             <ChatActionButtons 
             // onCall={() => {}}
@@ -664,12 +692,19 @@ const handlePickMedia = async () => {
             onMenu={() => setMenuVisible(true)} />
           </View>
 
-          <Modal visible={menuVisible} transparent animationType="fade" onRequestClose={() => setMenuVisible(false)}>
+          <Modal 
+          visible={menuVisible} 
+          transparent 
+          animationType="fade"
+          statusBarTranslucent={true} 
+          onRequestClose={() => setMenuVisible(false)}>
+            <StatusBar backgroundColor={COLORS.background || "#ffffff"} barStyle="dark-content" />
+
             <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
               <View style={styles.modalOverlayContainer}>
                 <View style={styles.dropdownCardMenu}>
                   {[
-                    // { id: 'profile', label: 'View Profile', icon: 'user', color: '#333333' },
+                    { id: 'profile', label: 'View Profile', icon: 'user', color: '#333333' },
                     // { id: 'media', label: 'Media & Photos', icon: 'image', color: '#333333' },
                     { id: 'unmatch', label: 'Unmatch', icon: 'search', color: '#333333' },
                     // { id: 'mute', label: 'Mute Notifications', icon: 'bell-slash', color: '#333333' },
@@ -847,15 +882,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16, 
-    paddingVertical: 10,
+    paddingHorizontal: 12, 
+    paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#e1d9b7',
     zIndex: 10 
   },
   navLeftSection: { 
     flexDirection: 'row',
-    alignItems: 'center' 
+    alignItems: 'center',
+    flex: 1,
+  marginLeft: 8, 
   },
   backArrow: { 
     marginRight: 12
@@ -882,7 +919,8 @@ const styles = StyleSheet.create({
     borderColor: '#fbf5db'
   },
   userInfo: {
-    justifyContent: 'center'
+    justifyContent: 'center',
+    flex:1
   },
   userName: { 
     fontSize: 16, 
@@ -1042,5 +1080,10 @@ unblockInlineText: {
   color: '#ffffff',
   fontSize: 12,
   fontWeight: '600',
+},
+profileClickableArea: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  flex: 1, 
 },
 });

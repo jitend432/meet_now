@@ -9,12 +9,14 @@ const initialState = {
   isLoggedIn: false,
   user: null,
   isProfileCompleted: false,
+  hasSeenTutorial: false,
   
  
   profileDraft: {
     fullName: null,
     age: null,
     gender: null,
+    height: null,
     bio: null,
     occupation: null,
     education: null,
@@ -97,6 +99,11 @@ const authSlice = createSlice({
       };
     },
 
+    setHasSeenTutorial: (state, action) => {
+      state.hasSeenTutorial = action.payload;
+    },
+    
+
     logout: (state) => {
       state.token = null;
       state.refreshToken = null;
@@ -107,6 +114,7 @@ const authSlice = createSlice({
       state.user = null;
       state.discoverySettings = initialState.discoverySettings;
       state.profileDraft = initialState.profileDraft;
+      state.hasSeenTutorial = false;
     },
     
   },
@@ -118,6 +126,7 @@ export const {
   logout, 
   setUserProfile, 
   updateDiscoverySettings,
+  setHasSeenTutorial,
   updateProfileDraft, 
   clearProfileDraft 
 } = authSlice.actions;

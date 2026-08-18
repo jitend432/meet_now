@@ -74,6 +74,27 @@ unmatchUser: async (userId) => {
     });
   },
 
+
+addDiscoverySource: async (discoverySourceEnum, remark = '') => {
+  try {
+    // Body me sirf wahi 2 fields jo Swagger maang raha hai
+    const payload = {
+      discoverySourceEnum: discoverySourceEnum,
+      remark: remark || '',
+    };
+
+    console.log('Sending Payload:', payload);
+
+    // Agar baseUrl me /api pehle se hai toh '/source/add-source', warna '/api/source/add-source'
+    const response = await apiService.post('/source/add-source', payload);
+
+    return response.data;
+  } catch (error) {
+    console.log('Add Discovery Source Error ====>', error?.response?.data || error.message);
+    throw error;
+  }
+},
+
 };
 
 export default userApi;

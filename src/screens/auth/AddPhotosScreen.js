@@ -3,29 +3,29 @@ import {
   StyleSheet, 
   Text, 
   View, 
-  ScrollView,
+  ScrollView, 
   Image, 
-  TouchableOpacity,
-  Platform,
-  Alert
+  TouchableOpacity, 
+  Dimensions 
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, FONTSIZE, SIZES } from '../../constants/theme';
-import Button from '../../components/common/Button';
-import LogoImage from '../../assets/images/vynk_t.png';
+import ImagePicker from 'react-native-image-crop-picker';
+import { COLORS, FONTSIZE } from '../../constants/theme';
+import { FONTS } from '../../constants/fonts';
 import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-free-solid/static";
-import { launchImageLibrary } from 'react-native-image-picker';
 import { photoApi } from '../../services/photoApi';
 import { useAppSelector } from '../../redux/hooks';
-import { FONTS } from '../../constants/fonts';
 import { CustomModal } from '../../components/common/CustomModal';
 
-const AddPhotosScreen = ({ navigation }) => {
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const MAIN_BOX_SIZE = SCREEN_WIDTH - 40; 
 
+const AddPhotosScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
-  const [photo, setPhoto] = useState(null);
+  const [photos, setPhotos] = useState([]); 
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
   const userId = useAppSelector((state) => state.auth.userId);
-  console.log("reg Id",userId)
 
   const [modalVisible, setModalVisible] = useState(false);
   const [modalConfig, setModalConfig] = useState({
@@ -40,270 +40,181 @@ const AddPhotosScreen = ({ navigation }) => {
     setModalVisible(true);
   };
 
-  const handleUploadPress = () => {
-    const options = {
+  // Image Picker with Native Zoom & Crop
+  const openCropPicker = (replaceIdx = null) => {
+    ImagePicker.openPicker({
+      width: 1000,
+      height: 1400,
+      cropping: true,
+      cropperCircleOverlay: false,
+      freeStyleCropEnabled: false, // 1:1 Aspect ratio fix
+      showCropGuidelines: true,    // Grid lines dikhane ke liye
       mediaType: 'photo',
-      quality: 0.8,
-    };
+      compressImageQuality: 0.8,
+    })
+      .then((image) => {
+        const fileData = {
+          uri: image.path,
+          type: image.mime,
+          name: image.filename || `photo_${Date.now()}.${image.mime.split('/')[1] || 'jpg'}`,
+          size: image.size,
+        };
 
-  //   launchImageLibrary(options, (response) => {
-  //     if (response.didCancel) {
-  //       console.log('User cancelled image picker');
-  //     } else if (response.errorMessage) {
-  //       console.log('ImagePicker Error: ', response.errorMessage);
-  //       showAlertModal('Error', 'Failed to pick an image. Please try again.', 'error');
-  //     } else if (response.assets && response.assets.length > 0) {
-  //       const pickedFile = response.assets[0];
-        
-  //       const fileData = {
-  //         uri: pickedFile.uri,
-  //         type: pickedFile.type || 'image/jpeg',
-  //         name: pickedFile.fileName || `photo_${Date.now()}.jpg`,
-  //         size: pickedFile.fileSize || null,
-  //       };
+        if (replaceIdx !== null) {
+          // Replace selected image
+          const updated = [...photos];
+          updated[replaceIdx] = fileData;
+          setPhotos(updated);
+        } else {
+          // Add new image
+          setPhotos((prev) => [...prev, fileData]);
+          setSelectedIndex(photos.length);
+        }
+      })
+      .catch((error) => {
+        if (error?.code !== 'E_PICKER_CANCELLED') {
+          showAlertModal('Error', error?.message || 'Failed to pick image', 'error');
+        }
+      });
+  };
 
-  //       setPhoto(fileData);
-  //     }
-  //   });
-  // };
-
-   launchImageLibrary(options, (response) => {
-    if (response.didCancel) {
-      console.log('User cancelled image picker');
-    } else if (response.errorMessage) {
-      console.log('ImagePicker Error: ', response.errorMessage);
-      showAlertModal('Error', 'Failed to pick an image. Please try again.', 'error');
-    } else if (response.assets && response.assets.length > 0) {
-      const pickedFile = response.assets[0];
-      
-      // Dynamic Extension Extractor
-      const fileUri = pickedFile.uri;
-      const uriType = pickedFile.type || 'image/jpeg';
-      
-      // Extension Detect Karein (e.g., png, jpg, webp)
-      const detectedExt = uriType.split('/')[1] || 'jpeg';
-      
-      // Dynamic Filename
-      const fileName = pickedFile.fileName 
-        ? pickedFile.fileName 
-        : `photo_${Date.now()}.${detectedExt}`;
-
-      const fileData = {
-        uri: fileUri,
-        type: uriType,
-        name: fileName,
-        size: pickedFile.fileSize || null,
-      };
-
-      console.log('Processed Photo Payload:', fileData);
-      setPhoto(fileData);
+  // Save / Upload handler
+  const handleUpload = async () => {
+    const activePhoto = photos[selectedIndex];
+    if (!activePhoto) {
+      showAlertModal('Photo Required', 'Please add a photo first.', 'warning');
+      return;
     }
-  });
-};
 
+    try {
+      setLoading(true);
+      const result = await photoApi.uploadSinglePhoto(userId, activePhoto);
 
-     const formatFileSize = (bytes) => {
-       if (!bytes) return '';
-       if (bytes < 1024 * 1024) {
-         return `${(bytes / 1024).toFixed(2)} KB`;
-       }
-       return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-     };
+      const isSuccess =
+        result?.status === true ||
+        result?.status === 200 ||
+        result?.success === true ||
+        result?.status === 'success';
 
-//   const handleContinue = async () => {
-//     if (!photo) {
-//     showAlertModal('Photo Required', 'Please upload a photo to continue.', 'warning');
-//       return;
-//     }
-
-// try {
-//   setLoading(true);
-//   console.log('Triggering direct Postman-matching multipart payload for user:', userId);
-
-//   const result = await photoApi.uploadSinglePhoto(userId, photo);
-//   console.log('API Single Upload Success Response ====>', result);
-
-//   // Exact boolean check karein (result.status === true ya result.success === true)
-//   if (result && (result.status === true || result.status === 200)) {
-    
-//     // Extra safety: Check karein ki response me uploaded photo ka URL aaya hai ya nahi
-//     if (result.data || result.photoUrl || result.user) {
-//       showAlertModal(
-//         'Success', 
-//         'Profile photo uploaded successfully!', 
-//         'success',
-//         [
-//           {
-//             text: 'OK',
-//             onPress: () => {
-//               setModalVisible(false);
-//               navigation.navigate('BasicInfoScreen');
-//             }
-//           }
-//         ]
-//       );
-//     } else {
-//       // API 200/true bhej rahi hai par photo upload nahi hui
-//       showAlertModal('Upload Failed', 'Photo upload nahi ho saki. Please try again.', 'error');
-//     }
-
-//   } else {
-//     // Backend ne error response bheja (e.g., status: false)
-//     showAlertModal('Upload Failed', result?.message || 'Something went wrong!', 'error');
-//   }
-
-// } catch (error) {
-//   console.log('Upload Catch Error ====>', error);
-//   showAlertModal('Error', 'Network error or upload failed', 'error');
-// } finally {
-//   setLoading(false);
-// }
-
-
-//   };
-
-
-    const handleContinue = async () => {
-  if (!photo) {
-    showAlertModal('Photo Required', 'Please upload a photo to continue.', 'warning');
-    return;
-  }
-
-  try {
-    setLoading(true);
-    console.log('Uploading photo for user:', userId);
-    console.log('Photo Payload:', photo);
-
-    const result = await photoApi.uploadSinglePhoto(userId, photo);
-    console.log('API Single Upload Response ====>', result);
-
-    // Dynamic Check: Status boolean true, number 200, ya string "success" ho
-    const isSuccess = 
-      result?.status === true || 
-      result?.status === 200 || 
-      result?.success === true ||
-      result?.status === 'success';
-
-    if (isSuccess) {
-      showAlertModal(
-        'Success', 
-        'Profile photo uploaded successfully!', 
-        'success',
-        [
+      if (isSuccess) {
+        showAlertModal('Success', 'Profile photo uploaded successfully!', 'success', [
           {
             text: 'OK',
             onPress: () => {
               setModalVisible(false);
               navigation.goBack();
-            }
-          }
-        ]
+            },
+          },
+        ]);
+      } else {
+        showAlertModal('Upload Failed', result?.message || 'Upload failed.', 'error');
+      }
+    } catch (error) {
+      showAlertModal(
+        'Upload Failed',
+        error?.response?.data?.message || 'Network error occurred.',
+        'error'
       );
-    } else {
-      // Backend message print karein
-      showAlertModal('Upload Failed', result?.message || result?.msg || 'Upload failed from server.', 'error');
+    } finally {
+      setLoading(false);
     }
+  };
 
-  } catch (error) {
-    console.log('Upload Catch Error ====>', error?.response?.data || error?.message || error);
-    showAlertModal(
-      'Upload Failed', 
-      error?.response?.data?.message || 'Network error or upload failed. Please try again.', 
-      'error'
-    );
-  } finally {
-    setLoading(false);
-  }
-};
-
+  const currentPhoto = photos[selectedIndex];
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView 
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.cardWrapper}>
+      {/* Top Header Bar */}
+      <View style={styles.topHeader}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerIconBtn}>
+          <FontAwesomeFreeSolid name="xmark" size={20} color="#1A1A1A" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Edit photos</Text>
+        <TouchableOpacity 
+          onPress={handleUpload} 
+          disabled={loading || photos.length === 0} 
+          style={[styles.headerIconBtn, styles.checkBtn, photos.length === 0 && { opacity: 0.5 }]}
+        >
+          <FontAwesomeFreeSolid name="check" size={16} color="#FFFFFF" />
+        </TouchableOpacity>
+      </View>
 
-          {/* Step Header Area */}
-          {/* <View style={styles.headerContainer}>
-            <View style={styles.logoRow}>
-              <Image source={LogoImage} style={styles.logoStyle} resizeMode="contain" />
-              <Text style={styles.brandName}>Complete Your Profile</Text>
-            </View>
-          </View> */}
-
-          {/* Progress Bar */}
-          {/* <View style={styles.progressWrapper}>
-            <View style={styles.progressTextRow}>
-              <Text style={styles.progressStepLabel}>Step 2 of 8</Text>
-              <Text style={styles.progressPercentageMetric}>25%</Text>
-            </View>
-            <View style={styles.progressTrackBackground}>
-              <View style={[styles.progressTrackFill, { width: '25%' }]} />
-            </View>
-          </View> */}
-
-          {/* Headings */}
-          <Text style={styles.mainStepTitle}>Add Your Photo</Text>
-          <Text style={styles.subStepTitle}>Upload a profile photo to get started. Photo size must be under 1 MB.</Text>
-
-          {/* Center Aligned Single Image Upload Slot */}
-          <View style={styles.singleUploadContainer}>
-            <TouchableOpacity 
-              style={[styles.uploadBox, styles.primaryBoxBorder]} 
-              activeOpacity={0.8}
-              onPress={handleUploadPress}
-            >
-              {photo?.uri ? (
-                <Image source={{ uri: photo.uri }} style={styles.previewImage} />
-              ) : (
-                <View style={styles.uploadContent}>
-                  <FontAwesomeFreeSolid name="camera" size={32} color={COLORS.primary} />
-                  <Text style={styles.uploadBoxText}>upload profile photo</Text>
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        {/* Main Crop/Preview Box */}
+        <View style={styles.mainCanvasCard}>
+          {currentPhoto ? (
+            <View style={styles.imageContainer}>
+              <Image source={{ uri: currentPhoto.uri }} style={styles.mainImage} resizeMode="cover" />
+              
+              {/* Grid Lines Overlay */}
+              <View style={styles.gridOverlay} pointerEvents="none">
+                <View style={styles.gridRow}>
+                  <View style={[styles.gridCell, styles.borderRight, styles.borderBottom]} />
+                  <View style={[styles.gridCell, styles.borderRight, styles.borderBottom]} />
+                  <View style={[styles.gridCell, styles.borderBottom]} />
                 </View>
-              )}
-            </TouchableOpacity>
+                <View style={styles.gridRow}>
+                  <View style={[styles.gridCell, styles.borderRight, styles.borderBottom]} />
+                  <View style={[styles.gridCell, styles.borderRight, styles.borderBottom]} />
+                  <View style={[styles.gridCell, styles.borderBottom]} />
+                </View>
+                <View style={styles.gridRow}>
+                  <View style={[styles.gridCell, styles.borderRight]} />
+                  <View style={[styles.gridCell, styles.borderRight]} />
+                  <View style={styles.gridCell} />
+                </View>
+              </View>
 
-            {/* Image Slot ke theek niche paste karein */}
-           {photo && (
-             <View style={{ marginTop: 10, alignItems: 'center' }}>
-               <Text style={{ fontSize: 14, color: '#333', fontWeight: '500' }} numberOfLines={1}>
-                 📄 {photo.name}
-               </Text>
-               {photo.size && (
-                 <Text style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
-                   💾 {formatFileSize(photo.size)}
-                 </Text>
-               )}
-             </View>
-           )}
-          </View>
-
-          <Text style={styles.helperTipText}>
-            Click the slot above to upload your photo. This will be visible as your main profile picture.
-          </Text>
-
-          {/* Action Controls Footer */}
-          <View style={styles.navigationControlRow}>
+              {/* Replace Button */}
+              <TouchableOpacity 
+                style={styles.replaceBtn} 
+                activeOpacity={0.8}
+                onPress={() => openCropPicker(selectedIndex)}
+              >
+                <FontAwesomeFreeSolid name="image" size={14} color="#FFF" style={{ marginRight: 6 }} />
+                <Text style={styles.replaceBtnText}>Replace</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
             <TouchableOpacity 
-              activeOpacity={0.7} 
-              onPress={() => navigation.navigate('EditProfileScreen')}
-              style={styles.backButtonTouchTarget}
+              style={styles.emptyUploadPlaceholder} 
+              onPress={() => openCropPicker()}
             >
-              <Text style={styles.backButtonText}>Back</Text>
+              <FontAwesomeFreeSolid name="camera" size={36} color="#777" />
+              <Text style={styles.emptyUploadText}>Tap to add photo</Text>
             </TouchableOpacity>
-
-            <Button 
-              title="Continue" 
-              onPress={handleContinue} 
-              loading={loading}
-              style={styles.continueActionButton}
-            />
-          </View>
-
+          )}
         </View>
+
+        {/* Thumbnail Selector Row */}
+        
+        <View style={styles.thumbnailRow}>
+          {photos.map((item, idx) => (
+            <TouchableOpacity
+              key={idx}
+              onPress={() => setSelectedIndex(idx)}
+              style={[
+                styles.thumbnailBox,
+                selectedIndex === idx && styles.activeThumbnailBox,
+              ]}
+            >
+              <Image source={{ uri: item.uri }} style={styles.thumbImage} />
+            </TouchableOpacity>
+          ))}
+
+          {/* Add More Slot */}
+          {/* {photos.length < 6 && (
+            <TouchableOpacity 
+              style={styles.addSlotBtn} 
+              onPress={() => openCropPicker()}
+            >
+              <FontAwesomeFreeSolid name="plus" size={18} color="#777" />
+            </TouchableOpacity>
+          )} */}
+        </View>
+
       </ScrollView>
+
       <CustomModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -316,181 +227,138 @@ const AddPhotosScreen = ({ navigation }) => {
   );
 };
 
-
 export default AddPhotosScreen;
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background, 
+    backgroundColor: '#FFFFFF',
+  },
+  topHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  headerTitle: {
+    fontSize: 18,
+   // fontWeight: '700',
+    color: '#1A1A1A',
+    fontFamily: FONTS.MEDIUM,
+  },
+  headerIconBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#F0F0F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkBtn: {
+    backgroundColor: '#1E1E1E',
   },
   scrollContainer: {
-    flexGrow: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 20,
+    alignItems: 'center',
+    paddingTop: 10,
+    paddingBottom: 30,
+  },
+  mainCanvasCard: {
+    width: MAIN_BOX_SIZE,
+    height: MAIN_BOX_SIZE * 1.50,
+    backgroundColor: '#F2F2F2',
+    borderRadius: 24,
+    padding: 12,
     justifyContent: 'center',
-  },
-  cardWrapper: {
-    backgroundColor: COLORS.background, 
-    borderRadius: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 24,
-    minHeight: '88%',
-    
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-  headerContainer: {
-    marginBottom: 16,
-    width: '100%',
-  },
-  logoRow: {
-    flexDirection: 'row',
     alignItems: 'center',
   },
-  logoStyle: {
-    width: 40,
-    height: 40,
-    marginRight: 10,
-  },
-  brandName: {
-    fontSize: 22,
-    fontWeight: '900',
-    color: COLORS.primary,
-  },
-  progressWrapper: {
-    marginBottom: 24,
+  imageContainer: {
     width: '100%',
-  },
-  progressTextRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 6,
-  },
-  progressStepLabel: {
-    fontSize: 14,
-    color: COLORS.primary,
-    fontWeight: '500',
-  },
-  progressPercentageMetric: {
-    fontSize: 14,
-    color: COLORS.primary,
-    fontWeight: 'bold',
-  },
-  progressTrackBackground: {
-    height: 6,
-    backgroundColor: '#cce3cc',
-    borderRadius: 3,
-  },
-  progressTrackFill: {
     height: '100%',
-    backgroundColor: COLORS.primary,
-    borderRadius: 3,
+    borderRadius: 18,
+    overflow: 'hidden',
+    position: 'relative',
   },
-  mainStepTitle: {
-    fontSize: 24,
-    //fontWeight: '800',
-    color: COLORS.primary,
-    marginBottom: 4,
-    fontFamily: FONTS.MEDIUM,
-    alignItems: 'center'
+  mainImage: {
+    width: '100%',
+    height: '100%',
   },
-  subStepTitle: {
-    fontSize: 15,
-    color: COLORS.primary,
-    opacity: 0.7,
-    marginBottom: 28,
-    fontFamily: FONTS.REGULAR
+  gridOverlay: {
+    ...StyleSheet.absoluteFillObject,
   },
-  uploadRowContainer: {
+  gridRow: {
+    flex: 1,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
   },
-  uploadBox: {
-    width: '48%',
-    height: 170,
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    justifyContent: 'center',
+  gridCell: {
+    flex: 1,
+  },
+  borderRight: {
+    borderRightWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.45)',
+  },
+  borderBottom: {
+    borderBottomWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.45)',
+  },
+  replaceBtn: {
+    position: 'absolute',
+    bottom: 14,
+    right: 14,
+    backgroundColor: '#1E1E1E',
+    flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
-  primaryBoxBorder: {
-    borderColor: COLORS.primary,
-  },
-  secondaryBoxBorder: {
-    borderColor: '#76c065',
-  },
-  uploadContent: {
-    alignItems: 'center',
-  },
-  uploadBoxText: {
-    fontSize: 13,
+  replaceBtnText: {
+    color: '#FFF',
+    fontSize: 14,
     fontWeight: '600',
-    color: COLORS.primary,
-    marginTop: 8,
   },
-  previewImage: {
+  emptyUploadPlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyUploadText: {
+    marginTop: 10,
+    fontSize: 15,
+    color: '#777',
+    fontWeight: '500',
+  },
+  thumbnailRow: {
+    flexDirection: 'row',
+    marginTop: 20,
+    width: MAIN_BOX_SIZE,
+    gap: 12,
+  },
+  thumbnailBox: {
+    width: 65,
+    height: 65,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    overflow: 'hidden',
+  },
+  activeThumbnailBox: {
+    borderColor: '#FF7B7B', // Focus color
+  },
+  thumbImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 10,
   },
-  helperTipText: {
-    fontSize: 13,
-    color: COLORS.primary,
-    opacity: 0.8,
-    lineHeight: 18,
-    marginBottom: 24,
-  },
-  navigationControlRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  addSlotBtn: {
+    width: 65,
+    height: 65,
+    borderRadius: 14,
+    backgroundColor: '#EAEAEA',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 'auto',
-    paddingTop: 16,
-    width: '100%',
   },
-  backButtonTouchTarget: {
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-  },
-  backButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.primary,
-  },
-  continueActionButton: {
-    width: '45%',
-    marginVertical: 0,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-
-  helperTipText: {
-    fontFamily: FONTS.REGULAR,
-    fontSize: FONTSIZE.xs,
-    padding:15
-
-  },
-  uploadBoxText: {
-    fontFamily: FONTS.REGULAR,
-    //fontSize: FONTSIZE.xl
-  },
-
-  singleUploadContainer: {
-    alignItems: 'center'
-  }
 });

@@ -9,8 +9,8 @@ handleLikeDislike: async (receiverId, action) => {
     }
 
     const payload = {
-      receiverId: Number(receiverId), // Ensured Number type for Java backend
-      action: action.toUpperCase()   // "LIKE", "DISLIKE", "SUPER_LIKE"
+      receiverId: Number(receiverId), 
+      action: action.toUpperCase()   
     };
 
     console.log("🚀 SENDING PAYLOAD TO BACKEND /likeMatch/like-dislike ====>", JSON.stringify(payload));
@@ -21,10 +21,15 @@ handleLikeDislike: async (receiverId, action) => {
     return response.data;
   },
 
-getWhoLikedMe: async (pageNumber = 0, pageSize = 10) => {
-  const response = await apiService.get(
-    `/likeMatch/who-liked-me?pageNumber=${pageNumber}&pageSize=${pageSize}&sortBy=createdAt&sortDir=desc`
-  );
+getWhoLikedMe: async (pageNumber = 0, pageSize = 10, sortBy = 'createdAt', sortDir = 'desc') => {
+  const response = await apiService.get('/likeMatch/who-liked-me', {
+    params: {
+      pageNumber,
+      pageSize,
+      sortBy,
+      sortDir,
+    },
+  });
   return response.data;
 },
 
@@ -35,5 +40,20 @@ getMyMatches: async () => {
   return response.data;
 },
 
+  rewindLastSwipe: async () => {
+    try {
+      const response = await apiService.get('/likeMatch/rewind');
+      console.log("✅ REWIND API RESPONSE ====>", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("❌ Rewind API Error:", error?.response?.data || error.message);
+      throw error;
+    }
+  },
+
+getMySendingLikes: async () => {
+  const response = await apiService.get('/likeMatch/my-sending-likes');
+  return response.data;
+},
 
 }

@@ -38,13 +38,7 @@ const GetStartedScreen = ({ navigation }) => {
           {/* <Text style={styles.mainCatchphraseText}>Find meaningful</Text>
           <Text style={styles.mainCatchphraseText}>connections</Text> */}
           
-          {/* <Text style={styles.subtextParagraph}>
-             By tapping ‘Create account’ or ‘Sign in’, you agree to
-             {'\n'}
-             our <Text style={styles.linkText} onPress={() => Linking.openURL('https://vynkdating.com/terms-of-service')}>Terms</Text>. Learn how we process your data in our
-             {'\n'}
-             <Text style={styles.linkText} onPress={() => Linking.openURL('https://vynkdating.com/privacy-policy')}>Privacy Policy</Text> and <Text style={styles.linkText} onPress={() => Linking.openURL('https://vynkdating.com/privacy-policy')}>Cookies Policy</Text>.
-           </Text> */}
+         
 
            <Text style={styles.subtextParagraph}>
             By tapping ‘Create account’ or ‘Sign in’, you agree to our{' '}
@@ -117,10 +111,12 @@ const styles = StyleSheet.create({
     paddingBottom: '8%',
   },
   logoGroupContainer: {
+    flex: 1,
+  justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
-    position:'relative',
-    top:120
+    //position:'relative',
+    //top:120
   },
   appLogoImage: {
     width: SIZES.avatarlg,
@@ -137,7 +133,8 @@ const styles = StyleSheet.create({
   textHeadingGroup: {
     alignItems: 'center',
     width: '100%',
-    top: 100
+    marginBottom: 20
+    //top: 100
    // marginVertical: 20,
     //overflow:'visible'
   },
@@ -154,8 +151,8 @@ const styles = StyleSheet.create({
     fontSize: FONTSIZE.xs,
     color: COLORS.button2,
     textAlign: 'center',
-    lineHeight: 25,
-    marginTop: 28,
+    lineHeight: 20,
+    marginBottom: 20,
     paddingHorizontal: 16,
     fontFamily: FONTS.REGULAR
   },

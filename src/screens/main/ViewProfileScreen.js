@@ -15,17 +15,26 @@ import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-fre
 // Reusable custom parts
 import Button from '../../components/common/Button'; 
 import { userApi } from '../../services/userApi';
+import ImageViewModal from '../../components/common/ImageViewModal';
 
 const DEFAULT_AVATAR = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150';
+
+const formatEnumValue = (val) => {
+  if (!val) return '';
+  return val.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+};
 
 const ViewProfileScreen = ({ route, navigation }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Full Screen Image Modal State
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
   const targetUser = route?.params?.user || {};
-  const userId = targetUser.userId;
-  console.log("View Profile UserId ====> ",userId)
+  const userId = route?.params?.userId || targetUser?.userId || targetUser?.id;
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -39,7 +48,6 @@ const ViewProfileScreen = ({ route, navigation }) => {
         const res = await userApi.getUserProfileById(userId);
         if (res && res.data) {
           setProfileData(res.data);
-          console.log("View other User Profile ===> ",res.data)
         }
       } catch (error) {
         console.error('Error fetching user profile:', error);
@@ -51,21 +59,38 @@ const ViewProfileScreen = ({ route, navigation }) => {
     fetchUserProfile();
   }, [userId]);
 
-  // Data mapping from backend with fallbacks to initial passed user or defaults
+  // Data mapping from backend
   const userName = profileData?.fullName || targetUser?.fullName || targetUser?.name || "User";
   const userAge = profileData?.age || targetUser?.age || "";
   const profilePhoto = profileData?.profilePhoto || targetUser?.profileImage || targetUser?.avatar;
 
   const city = profileData?.locations?.city;
   const state = profileData?.locations?.state;
+  const country = profileData?.locations?.country;
   const userLocation = city && state 
     ? `${city}, ${state}` 
-    : (city || state || targetUser?.location || "Location not specified");
+    : (city || state || country || targetUser?.location || "Location not specified");
 
-  const bio = profileData?.bio || "Coffee lover ☕ | Traveller ✈️ |\nLove exploring new places and meeting new people.";
+  const bio = profileData?.bio || "No bio provided.";
+  const occupation = profileData?.occupation;
+  const education = profileData?.education;
+  const gender = profileData?.gender;
+  const hopingToFind = profileData?.hopingToFind;
+  const lookingFor = profileData?.lookingFor;
+  const otherImages = profileData?.otherImages || [];
   const interestTags = profileData?.interests && profileData.interests.length > 0 
     ? profileData.interests 
-    : ["Travel", "Music", "Movies", "Reading", "Photography"];
+    : [];
+
+  const handleOpenImage = (img) => {
+    setSelectedImage(img);
+    setIsModalVisible(true);
+  };
+
+  const handleCloseImage = () => {
+    setIsModalVisible(false);
+    setSelectedImage(null);
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -73,10 +98,9 @@ const ViewProfileScreen = ({ route, navigation }) => {
         contentContainerStyle={styles.scrollContentLayout}
         showsVerticalScrollIndicator={false}
       >
-        {/* Main Integrated Container Box */}
         <View style={styles.integratedMainCard}>
           
-          {/* 1. Header is inside the same view now */}
+          {/* 1. Header Navbar */}
           <View style={styles.profileNavbarRow}>
             <TouchableOpacity 
               activeOpacity={0.7} 
@@ -89,29 +113,33 @@ const ViewProfileScreen = ({ route, navigation }) => {
             <View style={styles.placeholderBox} />
           </View>
 
-          {/* 2. Full Image Frame Section */}
+          {/* 2. Main Profile Image */}
           <View style={styles.imageContainerFrame}>
             {loading ? (
               <View style={[styles.bannerImageFrame, styles.loaderContainer]}>
                 <ActivityIndicator size="large" color="#0B5324" />
               </View>
             ) : (
-              <Image 
-                source={
-                  typeof profilePhoto === 'string' 
-                    ? { uri: profilePhoto } 
-                    : (profilePhoto || { uri: DEFAULT_AVATAR })
-                } 
-                style={styles.bannerImageFrame}
-                resizeMode="cover"
-              />
+              <TouchableOpacity 
+                activeOpacity={0.9} 
+                onPress={() => handleOpenImage(profilePhoto || DEFAULT_AVATAR)}
+              >
+                <Image 
+                  source={
+                    typeof profilePhoto === 'string' 
+                      ? { uri: profilePhoto } 
+                      : (profilePhoto || { uri: DEFAULT_AVATAR })
+                  } 
+                  style={styles.bannerImageFrame}
+                  resizeMode="cover"
+                />
+              </TouchableOpacity>
             )}
           </View>
 
-          {/* 3. Name Block Wrapper with Border Radius Curves */}
+          {/* 3. Name & Location Section */}
           <View style={styles.radiusNameBlockOverlay}>
             
-            {/* Identity Row inside Custom Radius Block */}
             <View style={styles.identityRowBlock}>
               <Text style={styles.userNameAgeText}>
                 {userName}{userAge ? `, ${userAge}` : ''}
@@ -121,33 +149,104 @@ const ViewProfileScreen = ({ route, navigation }) => {
               </View>
             </View>
 
-            {/* Location & Online Status elements */}
             <View style={styles.locationPillRowBlock}>
-              <Text style={styles.locationLabelText}>{userLocation}</Text>
+              <View style={styles.locationIconRow}>
+                <FontAwesomeFreeSolid name="map-marker-alt" size={13} color="#616161" style={{ marginRight: 6 }} />
+                <Text style={styles.locationLabelText}>{userLocation}</Text>
+              </View>
               <View style={styles.onlineStatusIndicatorPill}>
-                <Text style={styles.onlinePillTextText}>Online</Text>
+                <Text style={styles.onlinePillTextText}>Active</Text>
               </View>
             </View>
 
             <View style={styles.detailsContentDividerLine} />
 
-            {/* Description Segment Content */}
+            {/* 4. About / Bio */}
             <Text style={styles.sectionHeadingTitle}>About</Text>
             <Text style={styles.aboutDescriptionParagraphText}>
               {bio}
             </Text>
 
-            {/* Interest Tags Flex Structure Layout */}
-            <Text style={styles.sectionHeadingTitle}>Interests</Text>
-            <View style={styles.interestsWrappedFlexBoxContainer}>
-              {interestTags.map((tag, index) => (
-                <View key={index} style={styles.interestBadgeItemPill}>
-                  <Text style={styles.interestItemLabelText}>{tag}</Text>
+            {/* 5. Basic Details (Occupation, Education, Gender, Looking For) */}
+            <View style={styles.detailsContentDividerLine} />
+            <Text style={styles.sectionHeadingTitle}>Basic Details</Text>
+            
+            <View style={styles.metaInfoGrid}>
+              {occupation ? (
+                <View style={styles.metaInfoRow}>
+                  <FontAwesomeFreeSolid name="briefcase" size={14} color="#0B5324" style={styles.metaIcon} />
+                  <Text style={styles.metaInfoText}>{occupation}</Text>
                 </View>
-              ))}
+              ) : null}
+
+              {education ? (
+                <View style={styles.metaInfoRow}>
+                  <FontAwesomeFreeSolid name="graduation-cap" size={14} color="#0B5324" style={styles.metaIcon} />
+                  <Text style={styles.metaInfoText}>{formatEnumValue(education)}</Text>
+                </View>
+              ) : null}
+
+              {gender ? (
+                <View style={styles.metaInfoRow}>
+                  <FontAwesomeFreeSolid name="user" size={14} color="#0B5324" style={styles.metaIcon} />
+                  <Text style={styles.metaInfoText}>{formatEnumValue(gender)}</Text>
+                </View>
+              ) : null}
+
+              {lookingFor ? (
+                <View style={styles.metaInfoRow}>
+                  <FontAwesomeFreeSolid name="search" size={14} color="#0B5324" style={styles.metaIcon} />
+                  <Text style={styles.metaInfoText}>Looking for: {formatEnumValue(lookingFor)}</Text>
+                </View>
+              ) : null}
+
+              {hopingToFind ? (
+                <View style={styles.metaInfoRow}>
+                  <FontAwesomeFreeSolid name="heart" size={14} color="#0B5324" style={styles.metaIcon} />
+                  <Text style={styles.metaInfoText}>{formatEnumValue(hopingToFind)}</Text>
+                </View>
+              ) : null}
             </View>
 
-            {/* Bottom Primary/Secondary Actions Deck Bar */}
+            {/* 6. Photos Gallery (otherImages) */}
+            {otherImages.length > 0 && (
+              <>
+                <View style={styles.detailsContentDividerLine} />
+                <Text style={styles.sectionHeadingTitle}>Photos</Text>
+                <View style={styles.photoGalleryGrid}>
+                  {otherImages.map((imgUrl, index) => (
+                    <TouchableOpacity 
+                      key={index} 
+                      activeOpacity={0.8}
+                      onPress={() => handleOpenImage(imgUrl)}
+                    >
+                      <Image 
+                        source={{ uri: imgUrl }} 
+                        style={styles.galleryThumbnail} 
+                        resizeMode="cover"
+                      />
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </>
+            )}
+
+            {/* 7. Interest Tags */}
+            {interestTags.length > 0 && (
+              <>
+                <View style={styles.detailsContentDividerLine} />
+                <Text style={styles.sectionHeadingTitle}>Interests</Text>
+                <View style={styles.interestsWrappedFlexBoxContainer}>
+                  {interestTags.map((tag, index) => (
+                    <View key={index} style={styles.interestBadgeItemPill}>
+                      <Text style={styles.interestItemLabelText}>{formatEnumValue(tag)}</Text>
+                    </View>
+                  ))}
+                </View>
+              </>
+            )}
+
+            {/* 8. Bottom Action Buttons */}
             <View style={styles.bottomStickyControlDockRowContainer}>
               <View style={styles.primaryButtonFlexWrapper}>
                 <Button 
@@ -159,7 +258,7 @@ const ViewProfileScreen = ({ route, navigation }) => {
               </View>
 
               <TouchableOpacity 
-                activeOpacity={0.8}
+                activeOpacity={0.8} 
                 style={[styles.circleInteractiveActionBox, isLiked && styles.circleBoxLikedActiveHighlight]}
                 onPress={() => setIsLiked(!isLiked)}
               >
@@ -169,18 +268,18 @@ const ViewProfileScreen = ({ route, navigation }) => {
                   color={isLiked ? "#ffffff" : "#d32f2f"} 
                 />
               </TouchableOpacity>
-
-              <TouchableOpacity 
-                activeOpacity={0.8}
-                style={styles.circleInteractiveActionBox}
-              >
-                <FontAwesomeFreeSolid name="ellipsis-v" size={16} color="#757575" />
-              </TouchableOpacity>
             </View>
 
           </View>
         </View>
       </ScrollView>
+
+      {/* Image Preview Modal */}
+      <ImageViewModal
+        visible={isModalVisible}
+        imageUrl={selectedImage}
+        onClose={handleCloseImage}
+      />
     </SafeAreaView>
   );
 };
@@ -231,7 +330,7 @@ const styles = StyleSheet.create({
   },
   bannerImageFrame: {
     width: '100%',
-    height: 250,
+    height: 280,
     borderRadius: 16,
     backgroundColor: '#f5f5f5',
   },
@@ -243,9 +342,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
     backgroundColor: '#ffffff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    marginTop: -4,
   },
   identityRowBlock: {
     flexDirection: 'row',
@@ -265,7 +361,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 8,
+  },
+  locationIconRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   locationLabelText: {
     fontSize: 14,
@@ -274,18 +374,18 @@ const styles = StyleSheet.create({
   },
   onlineStatusIndicatorPill: {
     backgroundColor: '#e8f5e9',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
     borderRadius: 12,
   },
   onlinePillTextText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#2e7d32',
     fontWeight: '600',
   },
   detailsContentDividerLine: {
     height: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f0f0f0',
     marginVertical: 12,
   },
   sectionHeadingTitle: {
@@ -299,31 +399,57 @@ const styles = StyleSheet.create({
     color: '#424242',
     lineHeight: 20,
     fontWeight: '400',
-    marginBottom: 16,
+  },
+  metaInfoGrid: {
+    gap: 8,
+  },
+  metaInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  metaIcon: {
+    width: 20,
+    marginRight: 8,
+  },
+  metaInfoText: {
+    fontSize: 14,
+    color: '#424242',
+    fontWeight: '500',
+  },
+  photoGalleryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  galleryThumbnail: {
+    width: 95,
+    height: 95,
+    borderRadius: 10,
+    backgroundColor: '#f5f5f5',
   },
   interestsWrappedFlexBoxContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginBottom: 24,
+    gap: 8,
   },
   interestBadgeItemPill: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f1f8e9',
+    borderWidth: 1,
+    borderColor: '#c8e6c9',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
-    marginRight: 8,
-    marginBottom: 8,
   },
   interestItemLabelText: {
-    fontSize: 13,
-    color: '#424242',
-    fontWeight: '500',
+    fontSize: 12,
+    color: '#0B5324',
+    fontWeight: '600',
   },
   bottomStickyControlDockRowContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 8,
+    marginTop: 20,
   },
   primaryButtonFlexWrapper: {
     flex: 1,

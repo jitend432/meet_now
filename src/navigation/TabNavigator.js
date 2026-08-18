@@ -12,7 +12,8 @@ import MediaPhotosScreen from '../screens/main/MediaPhotos';
 import SearchChatScreen from '../screens/main/SearchChatScreen';
 import { COLORS } from '../constants/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import EditProfileScreen from '../screens/main/EditProfileScreen';
+//import EditProfileScreen from '../screens/main/EditProfileScreen';
+import LikesScreen from '../screens/main/LikesScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -74,6 +75,8 @@ const TabNavigator = () => {
             iconName = 'fire';
           } else if (route.name === 'Matches') {
             iconName = 'heart';
+          } else if (route.name === 'Likes') {
+            iconName = 'thumbs-up';
           } else if (route.name === 'Message') {
             iconName = 'comment-dots';
           } else if (route.name === 'Profile') {
@@ -112,6 +115,7 @@ const TabNavigator = () => {
       })}>
         <Tab.Screen name='Discover' component={DiscoverScreen} options={{ headerShown: false }}/>
         <Tab.Screen name='Matches' component={MatchesScreen} options={{ headerShown: false }}/>
+        <Tab.Screen name='Likes' component={LikesScreen} options={{ headerShown: false }}/>
         <Tab.Screen name='Message' component={ChatStack} options={{ headerShown: false }}/>
         <Tab.Screen name='Profile' component={ProfileScreen} options={{ headerShown: false }}/>
         <Tab.Screen name='Setting' component={SettingsScreen} options={{ headerShown: false }}/>

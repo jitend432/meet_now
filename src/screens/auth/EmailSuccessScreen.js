@@ -18,7 +18,8 @@ import { FONTS } from '../../constants/fonts';
 
 const EmailSuccessScreen = ({ navigation }) => {
   const handleAgree = () => {
-    navigation.navigate('BasicInfoScreen');
+    // navigation.navigate('BasicInfoScreen');
+    navigation.navigate('CommunityGuidelinesScreen');
   };
 
   const handleClose = () => {
@@ -132,17 +133,17 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   logoStyle: {
-    width: 70,
-    height: 70,
+    width: 75,
+    height: 75,
   },
   mainTitle: {
-    fontSize: FONTSIZE.h3,
+    fontSize: FONTSIZE.xxl,
     color: COLORS.button,
     marginBottom: 2,
     fontFamily: FONTS.SEMIBOLD,
   },
   subtitle: {
-    fontSize: 17,
+    fontSize: 15,
     color: '#7DAF93',
     marginBottom: 22,
     fontFamily: FONTS.REGULAR,
@@ -151,17 +152,16 @@ const styles = StyleSheet.create({
     gap: 24,
   },
   ruleItem: {
-    marginBottom: 2,
+    //marginBottom: 2,
   },
   ruleTitle: {
-    fontSize: 18,
-   // fontWeight: '700',
+    fontSize: 17,
     color: COLORS.button,
     marginBottom: 4,
     fontFamily: FONTS.MEDIUM,
   },
   ruleDescription: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#7DAF93',
     lineHeight: 19,
     fontFamily: FONTS.REGULAR,

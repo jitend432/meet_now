@@ -30,6 +30,8 @@ import ViewProfileScreen from '../screens/main/ViewProfileScreen';
 import DeleteAccountScreen from '../screens/main/DeleteAccountScreen';
 import EditProfileScreen from '../screens/main/EditProfileScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
+import CommunityGuidelinesScreen from '../screens/auth/CommunityGuidelinesScreen';
+import ReferralSourceScreen from '../screens/auth/ReferralSourceScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -89,6 +91,7 @@ useEffect(() => {
         ) :!isProfileCompleted ? (
           <>
            <Stack.Screen name='EmailSuccessScreen' component={EmailSuccessScreen} options={{ headerShown: false }}/>
+           <Stack.Screen name='CommunityGuidelinesScreen' component={CommunityGuidelinesScreen} options={{ headerShown: false }}/>
            <Stack.Screen name='BasicInfoScreen' component={BasicInfoScreen} options={{ headerShown: false}}/>
            <Stack.Screen name='ProfessionalDetailsScreen' component={ProfessionalDetailsScreen} options={{ headerShown: false}}/>
            <Stack.Screen name='YourInterestScreen' component={YourInterestScreen} options={{ headerShown: false}}/>
@@ -102,6 +105,7 @@ useEffect(() => {
         {/* <Stack.Screen name='CompleteprofileScreen' component={CompleteProfileScreen} options={{ headerShown: false }}/> */}
         <Stack.Screen name='TabNavigator' component={TabNavigator} options={{ headerShown: false }}/>
         <Stack.Screen name='SettingsScreen' component={SettingsScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name='ReferralSourceScreen' component={ReferralSourceScreen} options={{ headerShown: false }}/>
         <Stack.Screen name='VideoCallScreen' component={VideoCallScreen} options={{ headerShown: false }}/>
         <Stack.Screen name='ChatRoomScreen' component={ChatRoomScreen} options={{ headerShown: false }}/>
         <Stack.Screen name='ViewProfileScreen' component={ViewProfileScreen} options={{ headerShown: false }}/>

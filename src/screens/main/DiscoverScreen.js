@@ -35,6 +35,8 @@ import { COLORS } from '../../constants/theme';
 import { CustomModal } from '../../components/common/CustomModal';
 import LinearGradient from 'react-native-linear-gradient';
 import ProfilePhotoCarousel from '../../components/common/ProfilePhotoCarousel';
+import OnboardingTutorialModal from '../../components/common/OnboardingTutorialModal';
+import { setHasSeenTutorial } from '../../redux/slices/authSlice';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.4;
@@ -43,7 +45,7 @@ import { setUserProfile } from '../../redux/slices/authSlice';
 import { authApi } from '../../services/authApi';
 import { useAppDispatch } from '../../redux/hooks';
 
-const DiscoverScreen = ({navigation}) => {
+const DiscoverScreen = ({navigation, route}) => {
 
   //user profile call
   const dispatch = useAppDispatch()
@@ -73,6 +75,25 @@ useFocusEffect(
 
 // end profile
 
+// start Has seen tutorial
+
+const hasSeenTutorial = useAppSelector((state) => state.auth.hasSeenTutorial);
+const [showTutorial, setShowTutorial] = useState(false);
+
+useEffect(() => {
+  // Sirf Redux state se check hoga
+  if (!hasSeenTutorial) {
+    setShowTutorial(true);
+  }
+}, [hasSeenTutorial]);
+
+const handleCloseTutorial = () => {
+  setShowTutorial(false);
+  dispatch(setHasSeenTutorial(true));
+};
+
+  // End seen tutorial
+
   const user = useAppSelector((state) => state.auth.user)
   //const profileCompletion = user?.profileCompletion ?? 0;
   const profileData = user?.data || user;
@@ -87,7 +108,18 @@ const profileCompletion = profileData?.profileCompletion ?? 0;
   return true;
 };
 
+const [modalVisible, setModalVisible] = useState(false);
+const [modalConfig, setModalConfig] = useState({
+  title: '',
+  message: '',
+  type: 'info',
+  buttons: [],
+});
 
+const showAlertModal = (title, message, type = 'info', buttons = []) => {
+  setModalConfig({ title, message, type, buttons });
+  setModalVisible(true);
+};
 
 
 
@@ -434,6 +466,67 @@ const profileCompletion = profileData?.profileCompletion ?? 0;
 
   const feedbackIcon = getFeedbackIconDetails();
 
+//   const handleRewind = async () => {
+//   if (isLoading || isSwiping.current) return;
+//   if (!checkProfileCompletion()) return;
+
+//   if (currentIndex === 0) {
+//     Alert.alert("Notice", "You are already at the first profile.");
+//     return;
+//   }
+
+//   try {
+//     const res = await matchApi.rewindLastSwipe();
+    
+//     if (res?.status === true || res?.status === 200) {
+//       setCurrentIndex(prev => prev - 1);
+//       setIsExpanded(false);
+//     } else {
+//       Alert.alert("Notice", res?.msg || "No swipe available to rewind.");
+//     }
+//   } catch (error) {
+//     Alert.alert("Error", error?.response?.data?.msg || "Failed to rewind swipe.");
+//   }
+// };
+
+const handleRewind = async () => {
+  if (isLoading || isSwiping.current) return;
+  if (!checkProfileCompletion()) return;
+
+  if (currentIndex === 0) {
+    showAlertModal(
+      'Notice',
+      'You are already at the first profile.',
+      'info',
+      [{ text: 'OK', onPress: () => setModalVisible(false) }]
+    );
+    return;
+  }
+
+  try {
+    const res = await matchApi.rewindLastSwipe();
+
+    if (res?.status === true || res?.status === 200) {
+      setCurrentIndex((prev) => prev - 1);
+      setIsExpanded(false);
+    } else {
+      showAlertModal(
+        'Notice',
+        res?.msg || 'No swipe available to rewind.',
+        'info',
+        [{ text: 'OK', onPress: () => setModalVisible(false) }]
+      );
+    }
+  } catch (error) {
+    showAlertModal(
+      'Error',
+      error?.response?.data?.msg || error?.response?.data?.message || 'Failed to rewind swipe.',
+      'error',
+      [{ text: 'OK', onPress: () => setModalVisible(false) }]
+    );
+  }
+};
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
@@ -648,6 +741,14 @@ const profileCompletion = profileData?.profileCompletion ?? 0;
                   {/* FLOATING ACTION BUTTONS */}
                   {!isExpanded && (
                   <View style={styles.actionButtonsRow}>
+                    {/* 1. REWIND BUTTON (Tinder Style) */}
+                        <TouchableOpacity 
+                          onPress={handleRewind} 
+                          style={[styles.circleButton, styles.rewindButton]} 
+                          activeOpacity={0.8}
+                        >
+                          <FontAwesomeFreeSolid name="undo" size={20} color="#f5a623" />
+                        </TouchableOpacity>
                     <TouchableOpacity onPress={() => forceSwipe('left')} style={[styles.circleButton, styles.dislikeButton]} activeOpacity={0.8}>
                       <FontAwesomeFreeSolid name="times" size={24} color="#f44336" />
                     </TouchableOpacity>
@@ -696,6 +797,20 @@ const profileCompletion = profileData?.profileCompletion ?? 0;
            ]}
          />
 
+         <CustomModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          type={modalConfig.type}
+          title={modalConfig.title}
+          message={modalConfig.message}
+          buttons={modalConfig.buttons}
+        />
+
+      <OnboardingTutorialModal
+        visible={showTutorial}
+        onClose={handleCloseTutorial}
+       />
+
       </SafeAreaView>
     </GestureHandlerRootView>
   );
@@ -713,6 +828,7 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     alignItems: 'center',
     justifyContent: 'space-between',
+    //paddingBottom: Platform.OS === 'android' ? 8 : 16,
     paddingBottom: 16,
     backgroundColor: COLORS.background
   },
@@ -788,7 +904,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.45)',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 99,
+    zIndex: 999,
   },
 
   profileDetailsOverlay: {
@@ -798,10 +914,12 @@ const styles = StyleSheet.create({
   right: 0,
   paddingLeft: 16,
   paddingRight: 16,
-  paddingBottom: 85,
+  paddingBottom: SCREEN_HEIGHT * 0.19,
+  //paddingBottom: 170,
   paddingTop: 50, 
   borderBottomLeftRadius: 24,
   borderBottomRightRadius: 24,
+  overflow: 'hidden',
   zIndex: 998,
 },
   nameContainer: {

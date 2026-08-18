@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { 
   StyleSheet, 
   Text, 
@@ -8,25 +8,24 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   StatusBar,
-  RefreshControl // <--- 1. Import RefreshControl
+  RefreshControl
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native'; // <--- 2. Import useFocusEffect
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-free-solid/static";
-import CardContainer from '../../components/chat/CardContainer';
 import { matchApi } from '../../services/matchApi';
 import { FONTS } from '../../constants/fonts';
-import { COLORS, FONTSIZE } from '../../constants/theme';
+import { COLORS } from '../../constants/theme';
 
 const BASE_URL = ""; 
 
 const MatchesScreen = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
   const [matches, setMatches] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false); // <--- State for Pull-to-Refresh
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [hasError, setHasError] = useState(false);
 
-  // Screen par vapas aane par automatically data update karne ke liye
   useFocusEffect(
     useCallback(() => {
       fetchMatchesData();
@@ -44,8 +43,6 @@ const MatchesScreen = ({ navigation }) => {
       setHasError(false);
       
       const response = await matchApi.getMyMatches();
-      console.log(`Fetched My Matches ====>`, response);
-
       const matchesArray = Array.isArray(response) ? response : (response?.data || []);
       
       setMatches(matchesArray);
@@ -107,8 +104,8 @@ const MatchesScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar backgroundColor={COLORS.background} barStyle="dark-content" />
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <StatusBar backgroundColor={COLORS.background || '#ffffff'} barStyle="dark-content" />
       <View style={styles.mainLayoutContainer}>
         
         <Text style={styles.screenHeading}>Your Matches</Text>
@@ -148,15 +145,17 @@ const MatchesScreen = ({ navigation }) => {
             data={matches}
             keyExtractor={(item) => (item.userId || item.id || Math.random()).toString()}
             renderItem={renderMatchCard}
-            contentContainerStyle={styles.listContainer}
+            contentContainerStyle={[
+              styles.listContainer,
+              { paddingBottom: Math.max(insets.bottom, 16) + 80 }
+            ]}
             showsVerticalScrollIndicator={false}
-            // Pull-To-Refresh Features Add Kiye Hain
             refreshControl={
               <RefreshControl
                 refreshing={isRefreshing}
                 onRefresh={onRefresh}
-                colors={['#265c32']} // Android loader color
-                tintColor="#265c32"  // iOS loader color
+                colors={['#265c32']}
+                tintColor="#265c32"
               />
             }
           />
@@ -172,12 +171,13 @@ export default MatchesScreen;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1, 
+    backgroundColor: '#ffffff',
   },
   mainLayoutContainer: {
     flex: 1,
     paddingHorizontal: 14,
-    paddingTop: 16,
-    backgroundColor:'#ffffff'
+    paddingTop: 8,
+    backgroundColor: '#ffffff',
   },
   screenHeading: {
     fontSize: 26,
@@ -197,20 +197,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#43a047', 
     borderRadius: 20,
     padding: 16,
-    marginBottom: 24,
+    marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    margin:2
+    margin: 2
   },
   promoIconCircle: {
     width: 32,
     height: 32,
     borderRadius: 16,
     backgroundColor: '#ffffff',
-    justify: 'center',
+    justifyContent: 'center',
     alignItems: 'center',
     marginRight: 14,
   },
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.REGULAR
   },
   listContainer: {
-    paddingBottom: 16,
+    paddingTop: 4,
   },
   matchCard: {
     flexDirection: 'row',
@@ -237,13 +237,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 20,
     padding: 14,
-    marginBottom: 16,
+    marginBottom: 14,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.08,
     shadowRadius: 6,
     elevation: 2,
-    margin:2
+    margin: 2
   },
   avatarContainer: {
     position: 'relative',
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
   },
   retryButton: { 
     marginTop: 15, 
-    backgroundColor: COLORS.white, 
+    backgroundColor: COLORS.white || '#ffffff', 
     paddingHorizontal: 20, 
     paddingVertical: 8, 
     borderRadius: 8

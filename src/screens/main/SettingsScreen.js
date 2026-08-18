@@ -308,6 +308,12 @@ const confirmLogout = () => {
 
             </View>
 
+             <Button
+          title= "How did you find us?"
+          onPress={()=> navigation.navigate('ReferralSourceScreen')}
+          style={styles.findUsButton}
+          />
+
 
           <TouchableOpacity style={styles.logoutActionButton} activeOpacity={0.8} onPress={handleLogoutPress}>
             <View style={styles.logoutIconBadgeCircle}>
@@ -552,5 +558,11 @@ errorText: {
     padding: 20,
     backgroundColor: '#FFFFFF',
   },
+
+  findUsButton: {
+  marginTop: 21,
+  borderRadius: 12,
+  marginBottom:16
+},
 
 });

@@ -18,6 +18,7 @@ import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { authApi } from '../../services/authApi';
 import { setUserProfile } from '../../redux/slices/authSlice';
 import { useFocusEffect } from '@react-navigation/native';
+import ImageViewModal from '../../components/common/ImageViewModal';
 
 
 import RohanAvatar from '../../assets/images/user3.png';
@@ -32,6 +33,19 @@ const ProfileScreen = ({ navigation }) => {
   
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const [selectedImage, setSelectedImage] = useState(null);
+const [isModalVisible, setIsModalVisible] = useState(false);
+
+const handleOpenImage = (img) => {
+  setSelectedImage(img);
+  setIsModalVisible(true);
+};
+
+const handleCloseImage = () => {
+  setIsModalVisible(false);
+  setSelectedImage(null);
+};
 
   // useEffect(() => {
   //   const fetchUserProfile = async () => {
@@ -158,7 +172,10 @@ const ProfileScreen = ({ navigation }) => {
 
           <View style={styles.infoCardBlock}>
             <Text style={styles.cardSectionTitle}>Photos</Text>
-            <View style={styles.photoGalleryGrid}>
+
+
+
+            {/* <View style={styles.photoGalleryGrid}>
               {userData?.otherPhotos && userData.otherPhotos.length > 0 ? (
                 userData.otherPhotos.map((photoUrl, index) => (
                   <Image
@@ -170,7 +187,30 @@ const ProfileScreen = ({ navigation }) => {
               ) : (
                 <Image source={RohanAvatar} style={styles.galleryThumbnail} />
               )}
+            </View> */}
+
+            <View style={styles.photoGalleryGrid}>
+              {userData?.otherPhotos && userData.otherPhotos.length > 0 ? (
+                userData.otherPhotos.map((photoUrl, index) => (
+                  <TouchableOpacity 
+                    key={index} 
+                    activeOpacity={0.8}
+                    onPress={() => handleOpenImage(photoUrl)}
+                  >
+                    <Image
+                      source={{ uri: photoUrl }}
+                      style={styles.galleryThumbnail}
+                    />
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <TouchableOpacity activeOpacity={0.8} onPress={() => handleOpenImage(RohanAvatar)}>
+                  <Image source={RohanAvatar} style={styles.galleryThumbnail} />
+                </TouchableOpacity>
+              )}
             </View>
+
+
           </View>
 
           {/* Detailed Info Card Section */}
@@ -188,6 +228,13 @@ const ProfileScreen = ({ navigation }) => {
               <Text style={styles.fieldLabel}>Age</Text>
               <Text style={styles.fieldValue}>
                 {userData?.age}
+              </Text>
+            </View>
+
+            <View style={styles.fieldBlock}>
+              <Text style={styles.fieldLabel}>Height</Text>
+              <Text style={styles.fieldValue}>
+                {userData?.height}
               </Text>
             </View>
 
@@ -275,6 +322,11 @@ const ProfileScreen = ({ navigation }) => {
 
         </ScrollView>
       {/* </CardContainer> */}
+      <ImageViewModal
+        visible={isModalVisible}
+        imageUrl={selectedImage}
+        onClose={handleCloseImage}
+      />
     </SafeAreaView>
   );
 };
@@ -363,7 +415,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   userNameText: {
-    fontSize: FONTSIZE.lg,
+    fontSize: FONTSIZE.xs,
     color: '#265c32',
     fontFamily: FONTS.MEDIUM
   },
@@ -401,6 +453,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   bannerTopLine: {
     flexDirection: 'row',
