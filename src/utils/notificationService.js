@@ -14,7 +14,6 @@ import userApi from '../services/userApi';
 
 const messagingInstance = getMessaging();
 
-// 1. Background message handler (Must be registered early)
 setBackgroundMessageHandler(messagingInstance, async (remoteMessage) => {
   console.log('Background message received in background handler:', remoteMessage);
 });
@@ -85,7 +84,6 @@ export const initNotificationListeners = async (userId) => {
     });
   });
 
-  // 3. Token Refresh Listener
   const unsubscribeTokenRefresh = onTokenRefresh(messagingInstance, async (newToken) => {
     console.log("FCM Token refreshed:", newToken);
     try {
@@ -99,13 +97,11 @@ export const initNotificationListeners = async (userId) => {
     }
   });
 
-  // 4. Background Click Listener
   onNotificationOpenedApp(messagingInstance, (remoteMessage) => {
     console.log('Clicked from background state:', remoteMessage);
     // Navigation logic here if needed
   });
 
-  // 5. Quit State Click Listener
   getInitialNotification(messagingInstance)
     .then((remoteMessage) => {
       if (remoteMessage) {

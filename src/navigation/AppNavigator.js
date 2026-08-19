@@ -32,6 +32,7 @@ import EditProfileScreen from '../screens/main/EditProfileScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
 import CommunityGuidelinesScreen from '../screens/auth/CommunityGuidelinesScreen';
 import ReferralSourceScreen from '../screens/auth/ReferralSourceScreen';
+import LanguageSelectionScreen from '../screens/auth/LanguageSelectionScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -97,6 +98,7 @@ useEffect(() => {
            <Stack.Screen name='YourInterestScreen' component={YourInterestScreen} options={{ headerShown: false}}/>
            <Stack.Screen name='LifeStyleScreen' component={LifestyleScreen} options={{ headerShown: false}}/>
            <Stack.Screen name='InterestedInScreen' component={InterestedInScreen} options={{ headerShown: false}}/>
+           <Stack.Screen name='LanguageSelectionScreen' component={LanguageSelectionScreen} options={{ headerShown: false}}/>
            <Stack.Screen name='LookingForScreen' component={LookingForScreen} options={{ headerShown: false}}/>
            <Stack.Screen name='ProfileCompletedScreen' component={ProfileCompletedScreen} options={{ headerShown: false}}/>       
          </>

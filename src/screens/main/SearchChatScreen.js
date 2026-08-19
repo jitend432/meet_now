@@ -1,4 +1,3 @@
-// screens/chat/SearchChatScreen.js
 import React, { useState } from 'react';
 import { 
   StyleSheet, 
@@ -11,14 +10,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-free-solid/static";
-
-// Optional assets wrapper fallback path
 import SarahAvatar from '../../assets/images/sarah.png';
 
 const SearchChatScreen = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Mock datasets extracted from the template mockups
   const recentSearches = ["coffee", "movie", "hello"];
   const suggestedSearches = ["trip", "weekend", "photo"];
 
@@ -30,7 +26,6 @@ const SearchChatScreen = ({ navigation }) => {
     { id: '5', name: 'Sarah', time: '01 Apr, 11:00 AM', message: "Weekend coffee plans?", highlight: 'co' },
   ];
 
-  // Text highlighting handler logic helper helper function
   const renderHighlightedText = (text, highlight) => {
     if (!highlight) return <Text>{text}</Text>;
     const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
@@ -51,7 +46,6 @@ const SearchChatScreen = ({ navigation }) => {
         contentContainerStyle={styles.scrollContentLayout}
         showsVerticalScrollIndicator={false}
       >
-        {/* Main Integrated Card Deck Surface */}
         <View style={styles.integratedMainCard}>
           
           {/* Header Row */}
@@ -69,7 +63,6 @@ const SearchChatScreen = ({ navigation }) => {
             <View style={styles.placeholderBox} />
           </View>
 
-          {/* Search Text Input Control Input Box element */}
           <View style={styles.searchBarWrapperContainer}>
             <View style={styles.searchBarInnerFrame}>
               <FontAwesomeFreeSolid name="search" size={16} color="#757575" style={styles.searchIconLens} />
@@ -84,13 +77,10 @@ const SearchChatScreen = ({ navigation }) => {
             </View>
           </View>
 
-          {/* Conditional Layout View Render Switch State */}
           {searchQuery.length === 0 ? (
             
-            /* 🌟 STATE A: Recent & Suggested Searches UI Block (image_7f209f.png) */
             <View style={styles.suggestionsBaseBodyWrapper}>
               
-              {/* Recent Searches Card section */}
               <Text style={styles.listSectionTitleHeader}>Recent Searches</Text>
               <View style={styles.capsuleCardItemContainer}>
                 {recentSearches.map((item, index) => (
@@ -105,7 +95,6 @@ const SearchChatScreen = ({ navigation }) => {
                 ))}
               </View>
 
-              {/* Suggested Queries Card Section */}
               <Text style={[styles.listSectionTitleHeader, styles.spacingTopSectionModifier]}>Suggested</Text>
               <View style={styles.capsuleCardItemContainer}>
                 {suggestedSearches.map((item, index) => (
@@ -124,27 +113,22 @@ const SearchChatScreen = ({ navigation }) => {
 
           ) : (
             
-            /* 🌟 STATE B: Filtered List Search Results View Block (image_7f20a6.png) */
             <View style={styles.resultsBaseBodyWrapper}>
               <Text style={styles.resultsCounterTitleLabel}>
                 {sampleResults.length} Results Found
               </Text>
 
-              {/* Search Result Map Iteration Loop List */}
               {sampleResults.map((item) => (
                 <View key={item.id} style={styles.chatMessageListItemBlock}>
                   
-                  {/* User Profile Thumbnail Avatar image column element */}
                   <Image source={SarahAvatar} style={styles.chatItemRowProfileAvatar} />
 
-                  {/* Right side content core context detail column */}
                   <View style={styles.messageMetaTextDetailsColumnBox}>
                     <View style={styles.topNameTimeRowHeaderMeta}>
                       <Text style={styles.chatTargetProfileNameText}>{item.name}</Text>
                       <Text style={styles.messageTimestampTextLabel}>{item.time}</Text>
                     </View>
                     
-                    {/* Render message with bold highlighted parts matches query string segment text */}
                     <Text style={styles.messageTextPlain} numberOfLines={2}>
                       {renderHighlightedText(item.message, searchQuery)}
                     </Text>

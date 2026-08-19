@@ -173,22 +173,6 @@ const handleCloseImage = () => {
           <View style={styles.infoCardBlock}>
             <Text style={styles.cardSectionTitle}>Photos</Text>
 
-
-
-            {/* <View style={styles.photoGalleryGrid}>
-              {userData?.otherPhotos && userData.otherPhotos.length > 0 ? (
-                userData.otherPhotos.map((photoUrl, index) => (
-                  <Image
-                    key={index}
-                    source={{ uri: photoUrl }}
-                    style={styles.galleryThumbnail}
-                  />
-                ))
-              ) : (
-                <Image source={RohanAvatar} style={styles.galleryThumbnail} />
-              )}
-            </View> */}
-
             <View style={styles.photoGalleryGrid}>
               {userData?.otherPhotos && userData.otherPhotos.length > 0 ? (
                 userData.otherPhotos.map((photoUrl, index) => (
@@ -231,12 +215,24 @@ const handleCloseImage = () => {
               </Text>
             </View>
 
+
             <View style={styles.fieldBlock}>
               <Text style={styles.fieldLabel}>Height</Text>
               <Text style={styles.fieldValue}>
-                {userData?.height}
-              </Text>
-            </View>
+                {userData?.height ? `${userData.height} cm` : 'Not Specified'}
+               </Text>
+             </View>
+
+            <View style={styles.fieldBlock}>
+              <Text style={styles.fieldLabel}>Language</Text>
+              <Text style={styles.fieldValue}>
+              {Array.isArray(userData?.language) && userData.language.length > 0
+                  ? userData.language
+                    .map((lang) => lang.charAt(0).toUpperCase() + lang.slice(1).toLowerCase()) // 'HINDI' -> 'Hindi'
+                    .join(', ') 
+                : 'Not Specified'}
+                </Text>
+              </View>
 
             <View style={styles.iconFieldRow}>
               <FontAwesomeFreeSolid name="map-marker-alt" size={14} color="#265c32" style={styles.fieldIconWidth} />

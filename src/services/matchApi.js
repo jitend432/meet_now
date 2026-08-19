@@ -56,4 +56,9 @@ getMySendingLikes: async () => {
   return response.data;
 },
 
+getTopPicks: async () => {
+  const response = await apiService.get('/users/top-picks');
+  return response.data;
+},
+
 }

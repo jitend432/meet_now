@@ -9,27 +9,14 @@ export const authApi = {
     return response.data;
   },
 
-  // 2. Signup API
   register: async (userData) => {
     const response = await apiService.post('/userRegistration/register', userData);
     return response.data;
   },
 
-
-  // updateProfile: async (id, profileData) => {
-  //   const response = await apiService.put(`/users/update/${id}`, profileData);
-  //   return response.data;
-  // },
-
-//   updateProfile: async (registrationId, profileData) => {
-//   const response = await apiService.put(`/users/update/${registrationId}`, profileData);
-//   return response.data;
-// },
-
-updateProfile: async (registrationId, profileData) => {
+  updateProfile: async (registrationId, profileData) => {
   const cleanId = Number(registrationId);
 
-  // Path Variable ke sath Query Param (?registrationId=28) attach kar diya hai
   const response = await apiService.put(
     `/users/update/${cleanId}?registrationId=${cleanId}`, 
     profileData

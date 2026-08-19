@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../../constants/theme';
-import { likeService } from '../../services/apiService';
 import { matchApi } from '../../services/matchApi';
 
 const { width } = Dimensions.get('window');
@@ -32,19 +31,25 @@ const BLURRED_PLACEHOLDERS = [
   },
 ];
 
+const TAB_KEYS = {
+  LIKES: 'likes',
+  SENT: 'sent',
+  TOP_PICKS: 'top_picks',
+};
+
 const LikesScreen = ({ navigation }) => {
-  const [activeTab, setActiveTab] = useState('2 Likes');
+  const [activeTab, setActiveTab] = useState(TAB_KEYS.LIKES);
   const [loading, setLoading] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
-  
-  // Lists
+
+  // Lists & Count States
   const [whoLikedMeList, setWhoLikedMeList] = useState([]);
+  const [totalLikesCount, setTotalLikesCount] = useState(0);
   const [sentLikesList, setSentLikesList] = useState([]);
+  const [topPicksList, setTopPicksList] = useState([]);
   const [upgradeMsg, setUpgradeMsg] = useState('Upgrade to Gold to see people who already liked you.');
 
-  const tabs = ['2 Likes', 'Likes Sent', '10 Top Picks'];
-
-  // 1. Fetch Incoming Likes ("2 Likes" Tab)
+  // 1. Fetch Incoming Likes ("Likes" Tab)
   const fetchWhoLikedMe = useCallback(async () => {
     try {
       setLoading(true);
@@ -54,17 +59,18 @@ const LikesScreen = ({ navigation }) => {
         setIsPremium(false);
         setUpgradeMsg(resData?.msg || 'Upgrade your plan to see who liked you.');
         setWhoLikedMeList(BLURRED_PLACEHOLDERS);
+        setTotalLikesCount(BLURRED_PLACEHOLDERS.length);
       } else {
         setIsPremium(true);
-        const profiles = Array.isArray(resData)
-          ? resData
-          : (resData?.content || resData?.data || []);
-        setWhoLikedMeList(profiles.length > 0 ? profiles : BLURRED_PLACEHOLDERS);
+        const profiles = resData?.data || (Array.isArray(resData) ? resData : (resData?.content || []));
+        setWhoLikedMeList(profiles);
+        setTotalLikesCount(resData?.totalElements ?? profiles.length);
       }
     } catch (error) {
       console.error('Fetch Who Liked Me Error:', error);
       setIsPremium(false);
       setWhoLikedMeList(BLURRED_PLACEHOLDERS);
+      setTotalLikesCount(BLURRED_PLACEHOLDERS.length);
     } finally {
       setLoading(false);
     }
@@ -75,10 +81,26 @@ const LikesScreen = ({ navigation }) => {
     try {
       setLoading(true);
       const resData = await matchApi.getMySendingLikes();
-      const list = resData?.data || [];
+      const list = resData?.data || (Array.isArray(resData) ? resData : []);
       setSentLikesList(list);
     } catch (error) {
       console.error('Fetch Sent Likes Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // 3. Fetch Top Picks ("Top Picks" Tab)
+  const fetchTopPicks = useCallback(async () => {
+    try {
+      setLoading(true);
+      const resData = await matchApi.getTopPicks();
+      const list = Array.isArray(resData)
+        ? resData
+        : (resData?.data || resData?.content || []);
+      setTopPicksList(list);
+    } catch (error) {
+      console.error('Fetch Top Picks Error:', error);
     } finally {
       setLoading(false);
     }
@@ -90,35 +112,66 @@ const LikesScreen = ({ navigation }) => {
   }, [fetchWhoLikedMe]);
 
   // Tab Switch Handler
-  const handleTabPress = (tab) => {
-    setActiveTab(tab);
-    if (tab === 'Likes Sent') {
+  const handleTabPress = (tabKey) => {
+    setActiveTab(tabKey);
+    if (tabKey === TAB_KEYS.SENT) {
       fetchSentLikes();
-    } else if (tab === '2 Likes') {
+    } else if (tabKey === TAB_KEYS.LIKES) {
       fetchWhoLikedMe();
+    } else if (tabKey === TAB_KEYS.TOP_PICKS) {
+      fetchTopPicks();
     }
   };
 
   const handleCardPress = (item) => {
-    if (activeTab === 'Likes Sent') {
-      navigation?.navigate('UserProfileDetail', { userId: item.receiverId, user: item });
+    if (activeTab === TAB_KEYS.SENT) {
+      // Sent likes mein receiver profile open hogi
+      navigation?.navigate('UserProfileDetail', { 
+        userId: item.receiverId, 
+        user: item 
+      });
       return;
     }
 
+    if (activeTab === TAB_KEYS.TOP_PICKS) {
+      const topPickId = item.id || item.registration_id || item.userId;
+      navigation?.navigate('UserProfileDetail', { 
+        userId: topPickId, 
+        user: item 
+      });
+      return;
+    }
+
+    // Incoming Likes tab
     if (!isPremium) {
       navigation?.navigate('SubscriptionScreen');
     } else {
-      navigation?.navigate('UserProfileDetail', { user: item });
+      // Incoming likes mein sender ki profile open hogi
+      navigation?.navigate('UserProfileDetail', { 
+        userId: item.senderId || item.id, 
+        user: item 
+      });
     }
   };
 
   const renderLikeCard = ({ item }) => {
-    const isSentTab = activeTab === 'Likes Sent';
-    
-    // Blur sirf tab lagega jab incoming likes tab ho aur user premium na ho
-    const shouldBlur = !isSentTab && !isPremium;
-    const imageUrl = item.profileUrl || item.image || item.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500';
+    const isLikesTab = activeTab === TAB_KEYS.LIKES;
+    const isSentTab = activeTab === TAB_KEYS.SENT;
+    const isTopPicksTab = activeTab === TAB_KEYS.TOP_PICKS;
+
+    // Incoming likes tab par free user ke liye blur hoga
+    const shouldBlur = isLikesTab && !isPremium;
+
+    // Fallback safe extraction
+    const imageUrl =
+      item.profileUrl ||
+      item.profilePhoto ||
+      item.image ||
+      item.avatarUrl ||
+      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500';
+
     const displayName = item.userName || item.fullName || item.name || 'User';
+    const displayAge = item.age || 25;
 
     return (
       <TouchableOpacity
@@ -142,13 +195,17 @@ const LikesScreen = ({ navigation }) => {
                 {displayName},
               </Text>
             )}
-            <Text style={styles.userAge}> {item.age || 25}</Text>
+            <Text style={styles.userAge}> {displayAge}</Text>
           </View>
 
           <View style={styles.statusRow}>
-            <View style={styles.activeDot} />
+            <View style={[styles.activeDot, isTopPicksTab && styles.topPickDot]} />
             <Text style={styles.statusText}>
-              {isSentTab ? 'Liked by you' : 'Recently Active'}
+              {isSentTab
+                ? 'Liked by you'
+                : isTopPicksTab
+                ? (item.locations?.city || 'Top Pick')
+                : 'Recently Active'}
             </Text>
           </View>
         </View>
@@ -158,11 +215,36 @@ const LikesScreen = ({ navigation }) => {
             <Text style={styles.heartIcon}>❤️</Text>
           </View>
         )}
+
+        {isTopPicksTab && (
+          <View style={styles.starBadgeContainer}>
+            <Text style={styles.starIcon}>⭐</Text>
+          </View>
+        )}
       </TouchableOpacity>
     );
   };
 
-  const currentData = activeTab === 'Likes Sent' ? sentLikesList : whoLikedMeList;
+  const getCurrentData = () => {
+    if (activeTab === TAB_KEYS.SENT) return sentLikesList;
+    if (activeTab === TAB_KEYS.TOP_PICKS) return topPicksList;
+    return whoLikedMeList;
+  };
+
+  const tabsConfig = [
+    {
+      key: TAB_KEYS.LIKES,
+      label: totalLikesCount > 0 ? `${totalLikesCount} Likes` : 'Likes',
+    },
+    {
+      key: TAB_KEYS.SENT,
+      label: `Likes Sent (${sentLikesList.length})`,
+    },
+    {
+      key: TAB_KEYS.TOP_PICKS,
+      label: topPicksList.length > 0 ? `${topPicksList.length} Top Picks` : 'Top Picks',
+    },
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -170,15 +252,16 @@ const LikesScreen = ({ navigation }) => {
         <Text style={styles.headerTitle}>Likes</Text>
       </View>
 
+      {/* Tabs Row */}
       <View style={styles.tabsRow}>
-        {tabs.map((tab) => (
+        {tabsConfig.map((tab) => (
           <TouchableOpacity
-            key={tab}
-            onPress={() => handleTabPress(tab)}
-            style={[styles.tabItem, activeTab === tab && styles.activeTabItem]}
+            key={tab.key}
+            onPress={() => handleTabPress(tab.key)}
+            style={[styles.tabItem, activeTab === tab.key && styles.activeTabItem]}
           >
-            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
-              {tab === 'Likes Sent' ? `Likes Sent (${sentLikesList.length})` : tab}
+            <Text style={[styles.tabText, activeTab === tab.key && styles.activeTabText]}>
+              {tab.label}
             </Text>
           </TouchableOpacity>
         ))}
@@ -187,22 +270,34 @@ const LikesScreen = ({ navigation }) => {
       {/* Dynamic Subtitle Banner */}
       <View style={styles.bannerContainer}>
         <Text style={styles.bannerText}>
-          {activeTab === 'Likes Sent'
+          {activeTab === TAB_KEYS.SENT
             ? 'People you have shown interest in.'
+            : activeTab === TAB_KEYS.TOP_PICKS
+            ? 'Curated daily recommendations personalized for you.'
             : !isPremium
             ? upgradeMsg
-            : 'prioritize your likes.'}
+            : 'Prioritize your incoming likes.'}
         </Text>
       </View>
 
+      {/* Profiles Grid */}
       {loading ? (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color={COLORS?.primary || '#0B5324'} />
         </View>
       ) : (
         <FlatList
-          data={currentData}
-          keyExtractor={(item, index) => item.receiverId?.toString() || item.id?.toString() || index.toString()}
+          data={getCurrentData()}
+          keyExtractor={(item, index) => {
+            const rawId =
+              activeTab === TAB_KEYS.LIKES
+                ? item?.senderId
+                : activeTab === TAB_KEYS.SENT
+                ? item?.receiverId
+                : item?.id || item?.registration_id;
+
+            return `${activeTab}-${rawId || index}-${index}`;
+          }}
           renderItem={renderLikeCard}
           numColumns={2}
           columnWrapperStyle={styles.columnWrapper}
@@ -216,8 +311,8 @@ const LikesScreen = ({ navigation }) => {
         />
       )}
 
-      {/* Bottom CTA */}
-      {activeTab !== 'Likes Sent' && (
+      {/* Bottom Floating CTA for Free Incoming Likes */}
+      {activeTab === TAB_KEYS.LIKES && (
         <View style={styles.bottomCtaContainer}>
           {!isPremium ? (
             <TouchableOpacity
@@ -362,6 +457,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#27AE60',
     marginRight: 6,
   },
+  topPickDot: {
+    backgroundColor: '#F5A623',
+  },
   statusText: {
     color: '#FFFFFF',
     fontSize: 12,
@@ -380,6 +478,20 @@ const styles = StyleSheet.create({
   },
   heartIcon: {
     fontSize: 14,
+  },
+  starBadgeContainer: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  starIcon: {
+    fontSize: 13,
   },
   bottomCtaContainer: {
     position: 'absolute',

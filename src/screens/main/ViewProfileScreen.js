@@ -1,4 +1,3 @@
-// screens/chat/UserProfileScreen.js
 import React, { useState, useEffect } from 'react';
 import { 
   StyleSheet, 
@@ -12,7 +11,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-free-solid/static";
 
-// Reusable custom parts
 import Button from '../../components/common/Button'; 
 import { userApi } from '../../services/userApi';
 import ImageViewModal from '../../components/common/ImageViewModal';
@@ -161,13 +159,11 @@ const ViewProfileScreen = ({ route, navigation }) => {
 
             <View style={styles.detailsContentDividerLine} />
 
-            {/* 4. About / Bio */}
             <Text style={styles.sectionHeadingTitle}>About</Text>
             <Text style={styles.aboutDescriptionParagraphText}>
               {bio}
             </Text>
 
-            {/* 5. Basic Details (Occupation, Education, Gender, Looking For) */}
             <View style={styles.detailsContentDividerLine} />
             <Text style={styles.sectionHeadingTitle}>Basic Details</Text>
             
@@ -208,7 +204,6 @@ const ViewProfileScreen = ({ route, navigation }) => {
               ) : null}
             </View>
 
-            {/* 6. Photos Gallery (otherImages) */}
             {otherImages.length > 0 && (
               <>
                 <View style={styles.detailsContentDividerLine} />
@@ -231,7 +226,6 @@ const ViewProfileScreen = ({ route, navigation }) => {
               </>
             )}
 
-            {/* 7. Interest Tags */}
             {interestTags.length > 0 && (
               <>
                 <View style={styles.detailsContentDividerLine} />
@@ -246,7 +240,6 @@ const ViewProfileScreen = ({ route, navigation }) => {
               </>
             )}
 
-            {/* 8. Bottom Action Buttons */}
             <View style={styles.bottomStickyControlDockRowContainer}>
               <View style={styles.primaryButtonFlexWrapper}>
                 <Button 

@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONTSIZE, RADIUS, SIZES } from '../../constants/theme';
-import LogoImage from '../../assets/images/vynk_t.png';
 import { FONTS } from '../../constants/fonts';
 import { chatApi } from '../../services/chatApi';
 

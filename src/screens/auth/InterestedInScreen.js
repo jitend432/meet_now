@@ -12,8 +12,6 @@ import { ChipButton } from '../../components/common/ChipButton';
 import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-free-solid/static";
 
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
-import { authApi } from '../../services/authApi';
-import { setUserProfile } from '../../redux/slices/authSlice';
 import { updateProfileDraft } from '../../redux/slices/authSlice';
 import { COLORS } from '../../constants/theme';
 
@@ -31,45 +29,6 @@ export default function InterestedInScreen({navigation}) {
     'Other'
   ];
 
-  // const handleComplete = async () => {
-  //   if (!selectedInterest) {
-  //     Alert.alert('Validation Error', 'Please select who you are interested in.');
-  //     return;
-  //   }
-
-  //   setLoading(true);
-  //   try {
-  //     const formattedInterest = selectedInterest === 'Women' ? 'WOMEN' : selectedInterest.toUpperCase();
-
-  //     const submitPayload = {
-  //       ...existingUser,
-  //       interestedIn: formattedInterest
-  //     };
-
-  //     console.log("Posting Interested In Details:", submitPayload);
-
-  //     const responseData = await authApi.submitUserDetails(submitPayload); 
-
-  //     dispatch(setUserProfile(responseData));
-  //     navigation.navigate('LookingForScreen');
-
-  //   } catch (error) {
-  //     console.error('Interested In Details Submit Error:', error);
-      
-  //     const backendMessage = error?.response?.data?.message 
-  //       || error?.response?.data 
-  //       || error?.message 
-  //       || 'Something went wrong while saving your preference.';
-
-  //     Alert.alert(
-  //       'Submission Failed', 
-  //       typeof backendMessage === 'string' ? backendMessage : JSON.stringify(backendMessage)
-  //     );
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const handleComplete = () => {
   if (!selectedInterest) {
     Alert.alert('Validation Error', 'Please select who you are interested in.');
@@ -85,7 +44,7 @@ export default function InterestedInScreen({navigation}) {
   console.log("Saving Interested In Details to Redux Profile Draft:", interestedInPayload);
 
   dispatch(updateProfileDraft(interestedInPayload));
-  navigation.navigate('LookingForScreen');
+  navigation.navigate('LanguageSelectionScreen');
 };
 
   return (

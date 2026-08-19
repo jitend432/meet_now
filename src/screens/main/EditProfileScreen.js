@@ -48,29 +48,7 @@ const closeModal = () => {
   setModalConfig((prev) => ({ ...prev, visible: false }));
 };
 
-//   useFocusEffect(
-//   useCallback(() => {
-//   if (currentUser) {
-//     setProfileData({
-//       fullName: currentUser.fullName || '',
-//       gender: currentUser.gender || 'MALE',
-//       bio: currentUser.bio || '',
-//       occupation: currentUser.occupation || '',
-//       education: currentUser.education || 'UNDERGRADUATE',
-//       interests: currentUser.interests || [],
-//       drinkingHabit: currentUser.drinkingHabit || 'NO',
-//       smokingHabit: currentUser.smokingHabit || 'NO',
-//       hopingToFind: currentUser.hopingToFind || 'A_LONG_TERM_RELATIONSHIP',
-//       lookingFor: currentUser.lookingFor || 'EVERYONE',
-//       profilePhoto: currentUser.profilePhoto || [],
-//     });
 
-//     if (currentUser.dateOfBirth) {
-//       setAge(currentUser.dateOfBirth);
-//     }
-//   }
-// }, [currentUser])
-//   );
 
 useFocusEffect(
     useCallback(() => {
@@ -172,9 +150,6 @@ const onSave = async () => {
     
     console.log("✅ API RESPONSE RECEIVED:", response);
 
-    // Alert.alert('Success', 'Profile updated successfully!', [
-    //   { text: 'OK', onPress: () => navigation.goBack() }
-    // ]);
     setModalConfig({
       visible: true,
       type: 'success',
@@ -193,11 +168,6 @@ const onSave = async () => {
   } catch (error) {
     console.error('❌ Update Profile Error:', error);
     console.log('❌ ERROR RESPONSE DATA:', error?.response?.data);
-
-    // Alert.alert(
-    //   'Error',
-    //   error?.response?.data?.message || error?.message || 'Failed to update profile.'
-    // );
 
     setModalConfig({
       visible: true,
@@ -297,15 +267,6 @@ const getInterestLabel = (val) => {
         {/* Profile Photo */}
         <View style={styles.photoSection}>
           <View style={styles.avatarContainer}>
-            {/* <Image source={{ uri: profileData.images[0]?.uri }} style={styles.mainAvatar} /> */}
-
-            {/* <Image 
-       source={{ 
-         uri: profileData.profilePhoto
-       }} 
-       style={styles.mainAvatar} 
-     /> */}
-
      <Image 
   source={
     profileData.profilePhoto && typeof profileData.profilePhoto === 'string'
@@ -355,16 +316,6 @@ const getInterestLabel = (val) => {
             })}
           </View>
         </View>
-
-        {/* 3. Date of Birth */}
-        {/* <DatePickerInput
-           label="Date of Birth"
-           placeholder="Select date of birth"
-           value={age}
-           onSelectDate={setAge}
-           icon={<FontAwesomeFreeSolid name="calendar-alt" size={18} color={COLORS.logoBg} />}
-           style={styles.formFieldShadow}
-         /> */}
 
         {/* 4. Bio */}
         <View style={styles.sectionContainer}>
@@ -423,25 +374,6 @@ const getInterestLabel = (val) => {
             })}
           </View>
         </View>
-
-        {/* 8. Interests */}
-        {/* <View style={styles.sectionContainer}>
-          <Text style={styles.sectionLabel}>Interests</Text>
-          <View style={styles.chipsContainer}>
-            {profileData.interests.map((interest) => (
-              <View key={interest} style={styles.interestChip}>
-                <Text style={styles.interestText}>{interest}</Text>
-                <TouchableOpacity onPress={() => removeInterest(interest)}>
-                  <FontAwesomeFreeSolid name="xmark" size={12} color="#FFF" />
-                </TouchableOpacity>
-              </View>
-            ))}
-            <TouchableOpacity style={styles.addMoreButton}>
-              <Text style={styles.addMoreText}>+ Add More</Text>
-            </TouchableOpacity>
-          </View>
-        </View> */}
-
 
         <View style={styles.sectionContainer}>
   <Text style={styles.sectionLabel}>Interests</Text>
@@ -540,26 +472,6 @@ const getInterestLabel = (val) => {
         </View> */}
 
         {/* 9. Drinking Habit */}
-        {/* <View style={styles.sectionContainer}>
-          <Text style={styles.sectionLabel}>Drinking Habit</Text>
-          <View style={styles.optionsRow}>
-            {['YES', 'NO', 'SOMETIMES'].map((habit) => {
-              const isSelected = profileData.drinkingHabit === habit;
-              return (
-                <TouchableOpacity
-                  key={habit}
-                  onPress={() => handleUpdate('drinkingHabit', habit)}
-                  style={[styles.optionChip, isSelected && styles.optionChipSelected]}
-                >
-                  <FontAwesomeFreeSolid name="wine-glass" size={14} color={isSelected ? '#FFF' : THEME_GREEN} />
-                  <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>{habit}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View> */}
-
-        {/* 9. Drinking Habit */}
 <View style={styles.sectionContainer}>
   <Text style={styles.sectionLabel}>Drinking Habit</Text>
   <View style={styles.optionsRow}>
@@ -594,29 +506,7 @@ const getInterestLabel = (val) => {
 </View>
 
         {/* 10. Smoking Habit */}
-        {/* <View style={styles.sectionContainer}>
-          <Text style={styles.sectionLabel}>Smoking Habit</Text>
-          <View style={styles.optionsRow}>
-            {[
-              { label: 'No', value: 'NO' },
-              { label: 'Sometimes', value: 'I_SMOKE_SOMETIMES' },
-              { label: 'Regularly', value: 'REGULARLY' },
-            ].map((habit) => {
-              const isSelected = profileData.smokingHabit === habit.value;
-              return (
-                <TouchableOpacity
-                  key={habit.value}
-                  onPress={() => handleUpdate('smokingHabit', habit.value)}
-                  style={[styles.optionChip, isSelected && styles.optionChipSelected]}
-                >
-                  <FontAwesomeFreeSolid name="smoking" size={14} color={isSelected ? '#FFF' : THEME_GREEN} />
-                  <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>{habit.label}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View> */}
-
+       
         <View style={styles.sectionContainer}>
   <Text style={styles.sectionLabel}>Smoking Habit</Text>
   <View style={styles.optionsRow}>
@@ -644,28 +534,6 @@ const getInterestLabel = (val) => {
 </View>
 
         {/* 11. Hoping to Find */}
-        {/* <View style={styles.sectionContainer}>
-          <Text style={styles.sectionLabel}>Hoping to Find</Text>
-          <View style={styles.optionsRow}>
-            {[
-              { label: 'Long Term Relationship', value: 'A_LONG_TERM_RELATIONSHIP' },
-              { label: 'Casual Dating', value: 'CASUAL_DATING' },
-              { label: 'Friendship', value: 'FRIENDSHIP' },
-            ].map((item) => {
-              const isSelected = profileData.hopingToFind === item.value;
-              return (
-                <TouchableOpacity
-                  key={item.value}
-                  onPress={() => handleUpdate('hopingToFind', item.value)}
-                  style={[styles.optionChip, isSelected && styles.optionChipSelected]}
-                >
-                  <FontAwesomeFreeSolid name="heart" size={14} color={isSelected ? '#FFF' : THEME_GREEN} />
-                  <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>{item.label}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View> */}
 
         <View style={styles.sectionContainer}>
   <Text style={styles.sectionLabel}>Hoping to Find</Text>

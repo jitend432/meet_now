@@ -41,45 +41,7 @@ export const photoApi = {
   return response.data;
 },
 
-  // uploadMultiplePhotos: async (userId, imageFiles) => {
-  //   if (!userId || !Array.isArray(imageFiles) || imageFiles.length === 0) return null;
-
-  //   const formData = new FormData();
-  //   imageFiles.forEach((file) => {
-  //     formData.append('files', {
-  //       uri: Platform.OS === 'ios' ? file.uri.replace('file://', '') : file.uri,
-  //       type: file.type || 'image/jpeg',
-  //       name: file.name || `photo_${Date.now()}_${Math.random().toString(36).substr(2, 5)}.jpg`,
-  //     });
-  //   });
-
-  //   const response = await apiService.post(`/photos/upload-multiple/${userId}`, formData, {
-  //     headers: {
-  //       'Content-Type': 'multipart/form-data',
-  //     },
-  //   });
-
-  //   return response.data;
-  // },
-
-//   uploadMultiplePhotos: async (userId, imageFiles) => {
-//   if (!userId || !Array.isArray(imageFiles) || imageFiles.length === 0) return null;
-
-//   try {
-//     const filesArray = imageFiles.map(file => file.uri || file);
-
-//     const response = await apiService.post(`/photos/upload-multiple/${userId}`, null, {
-//       params: {
-//         files: filesArray 
-//       }
-//     });
-
-//     return response.data;
-//   } catch (error) {
-//     throw error;
-//   }
-// },
-
+ 
 uploadMultiplePhotos: async (userId, imageFiles) => {
   if (!userId || !Array.isArray(imageFiles) || imageFiles.length === 0) return null;
 

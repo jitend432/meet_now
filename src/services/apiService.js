@@ -17,26 +17,7 @@ const apiService = axios.create({
 apiService.interceptors.request.use(
   async (config) => {
     try {
-      // const credentials = await Keychain.getGenericPassword({ service: 'persist:auth' });
       
-      // if (credentials && credentials.password) {
-      //   const parsedData = JSON.parse(credentials.password);
-      //   const token = parsedData.token; // authSlice ke andar ka actual token
-        
-      //   if (token) {
-      //     config.headers.Authorization = `Bearer ${token}`;
-      //   }
-      // }
-
-      // Pure try block ke andar bas ye teen lines daal dijiye:
-
-      // temp code start ==================================
-
-      // const isPublicRoute = config.url && (
-      //   config.url.includes('/userRegistration/') || 
-      //   config.url.includes('/auth/login')
-      // );
-
       const isPublicRoute = config.url && (
        (config.url.includes('/userRegistration/') &&
         !config.url.includes('/userRegistration/delete') &&

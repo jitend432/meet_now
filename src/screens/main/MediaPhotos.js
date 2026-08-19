@@ -1,4 +1,3 @@
-// screens/chat/MediaPhotosScreen.js
 import React, { useState } from 'react';
 import { 
   StyleSheet, 
@@ -102,7 +101,6 @@ const MediaPhotosScreen = ({ navigation }) => {
             </View>
           </View>
 
-          {/* Grid View Section - Content changes dynamically based on activeTab */}
           <View style={styles.gridMediaLayoutContainer}>
             {currentItems.map((item) => (
               <View key={item.id} style={styles.gridCardItemFrame}>

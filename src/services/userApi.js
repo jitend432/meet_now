@@ -2,21 +2,39 @@ import apiService from './apiService';
 
 export const userApi = {
   
-  getNearbyUsers: async (radiusInKm, minAge, maxAge) => {
-    try {
-      const response = await apiService.get('/users/nearby', {
-        params: {
-          radiusInKm: radiusInKm ? Number(radiusInKm) : undefined,
-          minAge: minAge ? Number(minAge) : undefined,
-          maxAge: maxAge ? Number(maxAge) : undefined,
-        },
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Get Nearby Users API Error:', error);
-      throw error;
-    }
-  },
+  // getNearbyUsers: async (radiusInKm, minAge, maxAge) => {
+  //   try {
+  //     const response = await apiService.get('/users/nearby', {
+  //       params: {
+  //         radiusInKm: radiusInKm ? Number(radiusInKm) : undefined,
+  //         minAge: minAge ? Number(minAge) : undefined,
+  //         maxAge: maxAge ? Number(maxAge) : undefined,
+  //       },
+  //     });
+  //     return response.data;
+  //   } catch (error) {
+  //     console.error('Get Nearby Users API Error:', error);
+  //     throw error;
+  //   }
+  // },
+
+  getNearbyUsers: async (radiusInKm, minAge, maxAge, lookingFor, isGlobal) => {
+  try {
+    const response = await apiService.get('/users/nearby', {
+      params: {
+        radiusInKm: radiusInKm ? Number(radiusInKm) : undefined,
+        minAge: minAge ? Number(minAge) : undefined,
+        maxAge: maxAge ? Number(maxAge) : undefined,
+        lookingFor: lookingFor || undefined,
+        global: typeof isGlobal === 'boolean' ? isGlobal : undefined,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Get Nearby Users API Error:', error);
+    throw error;
+  }
+},
 
    submitFCMToken: async (tokenPayload) => {
   const response = await apiService.post('/user-device/submit-token', tokenPayload);
@@ -28,12 +46,6 @@ getUserProfileById: async (userId) => {
   return response.data;
 },
 
-// reportUser: async (reportUserId, reason) => {
-//   const response = await apiService.post('/userRegistration/report-user', null, {
-//     params: { reportUserId, reason }
-//   });
-//   return response.data;
-// },
 
 reportUser: async (userId, selectedReason) => {
   return await apiService.post('/userRegistration/report-user', null, {
@@ -44,12 +56,6 @@ reportUser: async (userId, selectedReason) => {
   });
 },
 
-// blockUser: async (userId) => {
-//   const response = await apiService.post('/userRegistration/block-user', null, {
-//     params: { userId }
-//   });
-//   return response.data;
-// },
 
 blockUser: async (userId) => {
   return await apiService.post('/userRegistration/block-user', null, {
@@ -77,15 +83,12 @@ unmatchUser: async (userId) => {
 
 addDiscoverySource: async (discoverySourceEnum, remark = '') => {
   try {
-    // Body me sirf wahi 2 fields jo Swagger maang raha hai
     const payload = {
       discoverySourceEnum: discoverySourceEnum,
       remark: remark || '',
     };
 
     console.log('Sending Payload:', payload);
-
-    // Agar baseUrl me /api pehle se hai toh '/source/add-source', warna '/api/source/add-source'
     const response = await apiService.post('/source/add-source', payload);
 
     return response.data;

@@ -125,7 +125,7 @@ const showAlertModal = (title, message, type = 'info', buttons = []) => {
 
  //console.log("NearByscreen userDetails current login user",user.profileCompletion)
 
-  const { distance, minAge, maxAge } = useAppSelector((state) => state.auth.discoverySettings);
+  const { distance, minAge, maxAge, lookingFor, isGlobal } = useAppSelector((state) => state.auth.discoverySettings);
   
   const [profiles, setProfiles] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -194,7 +194,7 @@ const showAlertModal = (title, message, type = 'info', buttons = []) => {
 
   useEffect(() => {
     fetchNearbyProfiles();
-  }, [distance, minAge, maxAge]);
+  }, [distance, minAge, maxAge, lookingFor, isGlobal]);
 
   useEffect(() => {
     if (profiles.length > 0 && currentIndex < profiles.length && currentProfile.id) {
@@ -202,21 +202,48 @@ const showAlertModal = (title, message, type = 'info', buttons = []) => {
     }
   }, [currentIndex, profiles]);
 
+  // const fetchNearbyProfiles = async () => {
+  //   try {
+  //     setIsLoading(true);
+  //     setHasError(false);
+  //     const response = await userApi.getNearbyUsers(distance, minAge, maxAge);
+  //     const profilesArray = response?.data || [];
+  //     setProfiles(profilesArray);
+  //     setCurrentIndex(0); 
+  //   } catch (error) {
+  //     console.error('Failed to fetch nearby users:', error);
+  //     setHasError(true);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
   const fetchNearbyProfiles = async () => {
-    try {
-      setIsLoading(true);
-      setHasError(false);
-      const response = await userApi.getNearbyUsers(distance, minAge, maxAge);
-      const profilesArray = response?.data || [];
-      setProfiles(profilesArray);
-      setCurrentIndex(0); 
-    } catch (error) {
-      console.error('Failed to fetch nearby users:', error);
-      setHasError(true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  try {
+    setIsLoading(true);
+    setHasError(false);
+
+    // Global on hone par distance ignore hoga ya normal pass hoga
+    const radiusParam = isGlobal ? undefined : distance;
+
+    const response = await userApi.getNearbyUsers(
+      radiusParam, 
+      minAge, 
+      maxAge, 
+      lookingFor, 
+      isGlobal
+    );
+
+    const profilesArray = response?.data || [];
+    setProfiles(profilesArray);
+    setCurrentIndex(0); 
+  } catch (error) {
+    console.error('Failed to fetch nearby users:', error);
+    setHasError(true);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const fetchCurrentProfilePhotos = async (userId) => {
     try {

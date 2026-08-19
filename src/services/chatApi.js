@@ -1,4 +1,3 @@
-//import apiService from "./apiService";
 import apiService from '../services/apiService';
 
 export const chatApi = {

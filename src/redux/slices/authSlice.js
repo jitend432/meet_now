@@ -25,12 +25,15 @@ const initialState = {
     smokingHabit: null,
     hopingToFind: null,
     lookingFor: null,
+    language: [],
   },  
 
   discoverySettings: {
-    distance: 5, // default distance in km
-    minAge: 18,   // default min age
-    maxAge: 60,   // default max age
+    distance: 5,
+    minAge: 18,
+    maxAge: 60,
+    lookingFor: 'WOMEN',
+    isGlobal: false,   
   },
 
 };

@@ -7,30 +7,27 @@ import {
   SafeAreaView 
 } from 'react-native';
 import { FontAwesomeFreeSolid } from "@react-native-vector-icons/fontawesome-free-solid/static";
-
-// Reusable components from your app structure
 import CardContainer from '../../components/chat/CardContainer';
 import Button from '../../components/common/Button'; 
 import { COLORS } from '../../constants/theme';
 
 const DeleteChatScreen = ({ navigation }) => {
-  // State to toggle between 'confirm' and 'success' layouts
+  
   const [isDeletedSuccess, setIsDeletedSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDeleteExecute = () => {
     setIsLoading(true);
     
-    // Simulating database/state deletion process logic
     setTimeout(() => {
       setIsLoading(false);
-      setIsDeletedSuccess(true); // Switch to the second box from image_63cb7c.png
+      setIsDeletedSuccess(true); 
     }, 800);
   };
 
   const handleFinalDismiss = () => {
     setIsDeletedSuccess(false);
-    navigation?.goBack(); // Return to message listings
+    navigation?.goBack(); 
   };
 
   return (
@@ -38,10 +35,9 @@ const DeleteChatScreen = ({ navigation }) => {
       <CardContainer title="Hexa Dating">
         <View style={styles.contentContainer}>
           
-          {/* Main Action Modal Container Card */}
+        
           <View style={styles.dialogCardFrame}>
             
-            {/* Dynamic Card Header based on deletion status */}
             <View style={styles.cardHeaderRow}>
               <TouchableOpacity 
                 activeOpacity={0.7} 
@@ -56,11 +52,9 @@ const DeleteChatScreen = ({ navigation }) => {
               <View style={styles.headerPlaceholderBox} />
             </View>
 
-            {/* View Layer 1: Delete Confirmation View */}
             {!isDeletedSuccess ? (
               <View style={styles.innerCardWrapper}>
                 <View style={styles.cardInnerBody}>
-                  {/* Red Warning Trash Badge Layout */}
                   <View style={styles.iconCircleBadgeDanger}>
                     <FontAwesomeFreeSolid name="trash-alt" size={32} color="#b71c1c" />
                   </View>
@@ -71,7 +65,6 @@ const DeleteChatScreen = ({ navigation }) => {
                   </Text>
                 </View>
 
-                {/* Footer Buttons using your reusable component */}
                 <View style={styles.actionButtonsRow}>
                   <Button 
                     title="Cancel" 
@@ -89,10 +82,9 @@ const DeleteChatScreen = ({ navigation }) => {
                 </View>
               </View>
             ) : (
-              /* View Layer 2: Chat Deleted Success State View */
+            
               <View style={styles.innerCardWrapper}>
                 <View style={styles.cardInnerBody}>
-                  {/* Soft Light Green Success Check Badge Layout */}
                   <View style={styles.iconCircleBadgeSuccess}>
                     <FontAwesomeFreeSolid name="check" size={32} color="#0b5324" />
                   </View>
@@ -102,11 +94,10 @@ const DeleteChatScreen = ({ navigation }) => {
                   </Text>
                 </View>
 
-                {/* Single Primary "OK" Confirm Action Trigger */}
                 <View style={styles.actionButtonsRow}>
                   <Button 
                     title="OK" 
-                    variant="primary" // Automatically uses your clean '#0B5324' branding color
+                    variant="primary"
                     onPress={handleFinalDismiss} 
                     style={styles.flexButton}
                   />
@@ -181,7 +172,7 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 45,
-    backgroundColor: '#ffebee', // Translucent pinkish-red backdrop circle
+    backgroundColor: '#ffebee',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
@@ -190,7 +181,7 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 45,
-    backgroundColor: '#e8f5e9', // Translucent minty-green backdrop circle
+    backgroundColor: '#e8f5e9', 
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
